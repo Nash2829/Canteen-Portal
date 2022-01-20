@@ -170,28 +170,7 @@ const Register = (props) => {
 
 	return (
         <>
-            <Box sx={{ flexGrow: 1 }}>
-                <AppBar position="fixed">
-                    <Toolbar>
-                    <Typography
-                        variant="h6"
-                        component="div"
-                        sx={{ cursor: "pointer" }}
-                        onClick={() => navigate("/")}
-                    >
-                        Canteen Portal
-                    </Typography>
-                    <Box sx={{ flexGrow: 1 }} />
-                    <Button color="inherit" onClick={() => navigate("/login")}>
-                        Login
-                    </Button>
-                    <Button color="inherit" onClick={() => navigate("/register")}>
-                        Register
-                    </Button>
-                    </Toolbar>
-                </AppBar>
-            </Box>
-            <Grid container style={{marginTop: '100px'}} align={'center'} spacing={2}>
+            <Grid container align={'center'} spacing={2}>
                 <Grid item xs={12}>
                     <TextField
                         label='Name'

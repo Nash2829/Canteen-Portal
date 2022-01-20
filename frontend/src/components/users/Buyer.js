@@ -1,16 +1,17 @@
 import axios from "axios";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import ReactDOM from "react-dom";
 import * as React from 'react';
 import Box from '@mui/material/Box';
+import swal from 'sweetalert';
 import Button from '@mui/material/Button';
 import Toolbar from '@mui/material/Toolbar';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
-
 
 
 const BuyerProfile = (props) => {
@@ -25,19 +26,18 @@ const BuyerProfile = (props) => {
     const onSubmit = (props) => {
         console.log(thisUser);
         var elements = document.getElementsByClassName("MuiOutlinedInput-input MuiInputBase-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input");
-        console.log(typeof elements);
-        
         if (buttonText === 'Edit') {
             for (var i = 0; i < elements.length; i++) {elements[i].readOnly=false;}
             setButtonText('Submit');
         } else {
+            console.log(thisUser);
             axios
-                .post('http://localhost:4000', thisUser)
+                .post('http://localhost:4000/user/buyer/edit', thisUser)
                 .then(()=>{
                     swal('Edited successfully', 'Your details have been updated.', 'success');
                 })
                 .catch((err)=>console.log(err));
-            for (var i = 0; i < elements.length; i++) {elements[i].readOnly=true; elements[i].defaultValue={thisUser}}
+            for (var i = 0; i < elements.length; i++) {elements[i].readOnly=true;}
             localStorage.setItem('user', JSON.stringify(thisUser));
             setButtonText('Edit');
         }
@@ -59,21 +59,22 @@ const BuyerProfile = (props) => {
             >
             <Toolbar />
             <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-                <Grid container spacing={3} align={'center'}>
+                <Grid container spacing={2} align={'center'}>
                 <Grid item xs={12}>
                     <Paper
                     sx={{
                         p: 2,
                         display: 'flex',
                         flexDirection: 'column',
-                        height: 300,
+                        height: 420,
                     }}
                     >
+                <Grid container align={'center'} spacing={2}>
+
                     <Grid item xs={12}>
                         <TextField
                             label='Name'
                             variant='outlined'
-                            defaultValue={thisUser.Name}
                             value={thisUser.Name}
                             InputProps={{readOnly: true}}
                             onChange={handleChange('Name')}
@@ -83,7 +84,6 @@ const BuyerProfile = (props) => {
                         <TextField
                             label='Email'
                             variant='outlined'
-                            defaultValue={thisUser.Email}
                             value={thisUser.Email}
                             InputProps={{readOnly: true}}
                             onChange={handleChange('Email')}
@@ -93,7 +93,6 @@ const BuyerProfile = (props) => {
                         <TextField
                             label='Password'
                             variant='outlined'
-                            defaultValue={thisUser.Password}
                             value={thisUser.Password}
                             InputProps={{readOnly: true}}
                             onChange={handleChange('Password')}
@@ -103,7 +102,6 @@ const BuyerProfile = (props) => {
                         <TextField
                             label='Contact number'
                             variant='outlined'
-                            defaultValue={thisUser.ContactNo}
                             value={thisUser.ContactNo}
                             InputProps={{readOnly: true}}
                             onChange={handleChange('ContactNo')}
@@ -113,22 +111,22 @@ const BuyerProfile = (props) => {
                         <TextField
                             label='Age'
                             variant='outlined'
-                            defaultValue={thisUser.Age}
                             value={thisUser.Age}
                             InputProps={{readOnly: true}}
                             onChange={handleChange('Age')}
                         />
                     </Grid>
+
                     <Grid item xs={12}>
                         <TextField
-                            label='Batch name'
-                            variant='outlined'
-                            defaultValue={thisUser.BatchName}
+                            label='Batch'
+                            variant='outlined' 
                             value={thisUser.BatchName}
                             InputProps={{readOnly: true}}
                             onChange={handleChange('BatchName')}
                         />
                     </Grid>
+                </Grid>
                     </Paper>
                 </Grid>
                 <Grid item xs={12} align={'center'}>

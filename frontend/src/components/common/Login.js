@@ -12,10 +12,6 @@ import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import Toolbar from "@mui/material/Toolbar";
-import AppBar from "@mui/material/AppBar";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 
 
 const Login = (props) => {
@@ -90,29 +86,7 @@ const Login = (props) => {
     }
 
     return (
-        // <>
-        // <Box sx={{ flexGrow: 1 }}>
-        //     <AppBar position="fixed">
-        //         <Toolbar>
-        //         <Typography
-        //             variant="h6"
-        //             component="div"
-        //             sx={{ cursor: "pointer" }}
-        //             onClick={() => navigate("/")}
-        //         >
-        //             Canteen Portal
-        //         </Typography>
-        //         <Box sx={{ flexGrow: 1 }} />
-        //         <Button color="inherit" onClick={() => navigate("/login")}>
-        //             Login
-        //         </Button>
-        //         <Button color="inherit" onClick={() => navigate("/register")}>
-        //             Register
-        //         </Button>
-        //         </Toolbar>
-        //     </AppBar>
-        // </Box>
-        <Grid container style={{marginTop: '100px'}} align={'center'}  spacing={2}>
+        <Grid container  align={'center'}  spacing={2}>
             <Grid item xs={12}>
                 <TextField
                     label='Email'

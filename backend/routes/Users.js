@@ -1,6 +1,5 @@
 var express = require("express");
 var Router = express.Router();
-
 // Load User model
 const User = require("../models/Users");
 
@@ -95,6 +94,52 @@ Router.post("/login", (req, res) => {
             }
         }
     });          
+});
+
+
+// EDIT profile
+Router.post('/buyer/edit', async (req, res) => {
+    const user = req.body;
+    console.log('UserType: ', user.userStatus);
+    console.log(user);
+    if (user.userStatus === 'Buyer') {
+        await User.findOneAndUpdate({_id: user._id}, {
+            $set: {
+                Name: user.Name,
+                Password: user.Password,
+                ContactNo: user.ContactNo,
+                Age: user.Age,
+                BatchName: user.BatchName
+            }
+        }, {new: true, upsert: true}, 
+            (err, doc)=>{
+                if (err) {
+                    console.log(err);
+                } else {
+                    console.log(doc); 
+                    res.json(doc);
+                }
+            });
+    } else {
+        await User.findOneAndUpdate({_id: user._id}, {
+            $set: {
+                Name: user.Name,
+                Password: user.Password,
+                ContactNo: user.ContactNo,
+                ShopName: user.ShopName,
+                OpeningTime: user.OpeningTime,
+                ClosingTime: user.ClosingTime
+            }
+        }, {new: true, upsert: true}, 
+        (err, doc)=>{
+            if (err) {
+                console.log(err);
+            } else {
+                console.log(doc); 
+                res.json(doc);
+            }
+        });
+    }
 });
 
 module.exports = Router;
