@@ -15,7 +15,6 @@ import TextField from '@mui/material/TextField';
 
 
 const BuyerProfile = (props) => {
-    const navigate = useNavigate();
 
     const [thisUser, setThisUser] = useState(JSON.parse(localStorage.getItem('user'))) ;
     const [buttonText, setButtonText] = useState('Edit');
@@ -32,7 +31,7 @@ const BuyerProfile = (props) => {
         } else {
             console.log(thisUser);
             axios
-                .post('http://localhost:4000/user/buyer/edit', thisUser)
+                .post('http://localhost:4000/user/edit', thisUser)
                 .then(()=>{
                     swal('Edited successfully', 'Your details have been updated.', 'success');
                 })
@@ -60,80 +59,85 @@ const BuyerProfile = (props) => {
             <Toolbar />
             <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
                 <Grid container spacing={2} align={'center'}>
-                <Grid item xs={12}>
-                    <Paper
-                    sx={{
-                        p: 2,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        height: 420,
-                    }}
-                    >
-                <Grid container align={'center'} spacing={2}>
+                    <Grid item xs={12}>
+                        <Paper
+                        sx={{
+                            p: 2,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            height: 420,
+                        }}
+                        >
+                    <Grid container align={'center'}>
+                        <Grid item xs={6}>
+                            <Grid container align={'center'} spacing={2}>
 
-                    <Grid item xs={12}>
-                        <TextField
-                            label='Name'
-                            variant='outlined'
-                            value={thisUser.Name}
-                            InputProps={{readOnly: true}}
-                            onChange={handleChange('Name')}
-                        />
-                    </Grid>
-                    <Grid item xs={12}>
-                        <TextField
-                            label='Email'
-                            variant='outlined'
-                            value={thisUser.Email}
-                            InputProps={{readOnly: true}}
-                            onChange={handleChange('Email')}
-                        />
-                    </Grid>
-                    <Grid item xs={12}>
-                        <TextField
-                            label='Password'
-                            variant='outlined'
-                            value={thisUser.Password}
-                            InputProps={{readOnly: true}}
-                            onChange={handleChange('Password')}
-                        />
-                    </Grid>
-                    <Grid item xs={12}>
-                        <TextField
-                            label='Contact number'
-                            variant='outlined'
-                            value={thisUser.ContactNo}
-                            InputProps={{readOnly: true}}
-                            onChange={handleChange('ContactNo')}
-                        />
-                    </Grid>
-                    <Grid item xs={12}>
-                        <TextField
-                            label='Age'
-                            variant='outlined'
-                            value={thisUser.Age}
-                            InputProps={{readOnly: true}}
-                            onChange={handleChange('Age')}
-                        />
-                    </Grid>
+                                <Grid item xs={12}>
+                                    <TextField
+                                        label='Name'
+                                        variant='outlined'
+                                        value={thisUser.Name}
+                                        InputProps={{readOnly: true}}
+                                        onChange={handleChange('Name')}
+                                    />
+                                </Grid>
+                                <Grid item xs={12}>
+                                    <TextField
+                                        label='Email'
+                                        variant='outlined'
+                                        value={thisUser.Email}
+                                        InputProps={{readOnly: true}}
+                                        onChange={handleChange('Email')}
+                                    />
+                                </Grid>
+                                <Grid item xs={12}>
+                                    <TextField
+                                        label='Password'
+                                        variant='outlined'
+                                        value={thisUser.Password}
+                                        InputProps={{readOnly: true}}
+                                        onChange={handleChange('Password')}
+                                    />
+                                </Grid>
+                                <Grid item xs={12}>
+                                    <TextField
+                                        label='Contact number'
+                                        variant='outlined'
+                                        value={thisUser.ContactNo}
+                                        InputProps={{readOnly: true}}
+                                        onChange={handleChange('ContactNo')}
+                                    />
+                                </Grid>
+                                <Grid item xs={12}>
+                                    <TextField
+                                        label='Age'
+                                        variant='outlined'
+                                        value={thisUser.Age}
+                                        InputProps={{readOnly: true}}
+                                        onChange={handleChange('Age')}
+                                    />
+                                </Grid>
 
-                    <Grid item xs={12}>
-                        <TextField
-                            label='Batch'
-                            variant='outlined' 
-                            value={thisUser.BatchName}
-                            InputProps={{readOnly: true}}
-                            onChange={handleChange('BatchName')}
-                        />
+                                <Grid item xs={12}>
+                                    <TextField
+                                        label='Batch'
+                                        variant='outlined' 
+                                        value={thisUser.BatchName}
+                                        InputProps={{readOnly: true}}
+                                        onChange={handleChange('BatchName')}
+                                    />
+                                </Grid>
+                            </Grid>
+                            </Grid>
+                            <Grid item xs={12}></Grid>
+                        </Grid>
+                        </Paper>
                     </Grid>
-                </Grid>
-                    </Paper>
-                </Grid>
-                <Grid item xs={12} align={'center'}>
-                    <Button variant='contained' onClick={onSubmit}>
-                        {buttonText}
-                    </Button>
-                </Grid>
+                    <Grid item xs={12} align={'center'}>
+                        <Button variant='contained' onClick={onSubmit}>
+                            {buttonText}
+                        </Button>
+                    </Grid>
                 </Grid>
             </Container>
             </Box>

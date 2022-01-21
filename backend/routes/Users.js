@@ -98,7 +98,7 @@ Router.post("/login", (req, res) => {
 
 
 // EDIT profile
-Router.post('/buyer/edit', async (req, res) => {
+Router.post('/edit', async (req, res) => {
     const user = req.body;
     console.log('UserType: ', user.userStatus);
     console.log(user);

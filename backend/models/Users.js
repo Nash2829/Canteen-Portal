@@ -43,11 +43,11 @@ const UserSchema = new Schema({
         required: false
     },
 	OpeningTime: { 
-		type: String,
+		type: Date, 
         required: false
     },
 	ClosingTime: { 
-		type: String,
+		type: Date, 
         required: false
     }
 });
