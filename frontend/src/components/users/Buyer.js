@@ -15,8 +15,7 @@ import TextField from '@mui/material/TextField';
 
 
 const BuyerProfile = (props) => {
-
-    const [thisUser, setThisUser] = useState(JSON.parse(localStorage.getItem('user'))) ;
+    const [thisUser, setThisUser] = useState(JSON.parse(localStorage.getItem('user')));
     const [buttonText, setButtonText] = useState('Edit');
     const handleChange = (prop) => (event) => {
         setThisUser({ ...thisUser, [prop]: event.target.value });

@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import ReactDOM from "react-dom";
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import MenuItem from '@mui/material/MenuItem';
 import swal from 'sweetalert';
 import Button from '@mui/material/Button';
 import Toolbar from '@mui/material/Toolbar';
@@ -14,18 +13,21 @@ import Paper from '@mui/material/Paper';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import TimePicker from '@mui/lab/TimePicker';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 
 
 const VendorProfile = (props) => {
     const curr = JSON.parse(localStorage.getItem('user'));
-    const [thisUser, setThisUser] = useState({
-        ...curr, OpeningTime: new Date(curr.OpeningTime), ClosingTime: new Date(curr.ClosingTime)
-    }) ;
-    // setThisUser({...thisUser, ['OpeningTime']: new Date(thisUser.OpeningTime)});
-    // setThisUser({...thisUser, ['ClosingTime']: new Date(thisUser.ClosingTime)});
+    const [thisUser, setThisUser] = useState({ 
+        Name: curr.name,
+        Email: curr.Email,
+        Password: curr.Password,
+        ContactNo: curr.ContactNo,
+        ShopName: curr.ShopName,
+        OpeningTime: new Date(curr.OpeningTime), 
+        ClosingTime: new Date(curr.ClosingTime)
+    });
+    
     const [buttonText, setButtonText] = useState('Edit');
     const [currPass, setCurrPass] = useState('');
     const [newPass, setNewPass] = useState('');
@@ -36,7 +38,6 @@ const VendorProfile = (props) => {
     };
     
     const onSubmit = (props) => {
-        console.log(thisUser);
         var elements = document.getElementsByClassName("MuiOutlinedInput-input MuiInputBase-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input");
         if (buttonText === 'Edit') {
             for (var i = 0; i < elements.length; i++) {elements[i].readOnly=false;}
@@ -44,7 +45,7 @@ const VendorProfile = (props) => {
         } else {
             console.log(thisUser);
             axios
-                .post('http://localhost:4000/user/edit', thisUser)
+                .post('http://localhost:4000/user/edit', {user: thisUser, changePassword: false})
                 .then(()=>{
                     swal('Edited successfully', 'Your details have been updated.', 'success');
                 })
@@ -56,7 +57,21 @@ const VendorProfile = (props) => {
     };
 
     const onChangePasswordButton = () => {
-
+        if (currPass === thisUser.Password) {
+            if (newPass === confirmNewPass) {
+                axios
+                    .post('http://localhost:4000/user/edit', {_id: thisUser._id, newPassword: newPass, changePassword: true})
+                    .then(()=>{
+                        swal('Password changed successfully', 'Your password has been changed.', 'success');
+                    })
+                    .catch((err)=>console.log(err));
+            } else {
+                swal('Wrong password', 'The password entered in the current password is not correct.', 'warning');
+            }
+        } else {
+            swal('Passwords don\'t match', 'Please confirm your new password correctly.', 'error');
+        }
+        setCurrPass(''); setNewPass(''); setConfirmNewPass('');
     }
 
     return (<div>
@@ -123,7 +138,7 @@ const VendorProfile = (props) => {
                                             <TimePicker 
                                                 readOnly
                                                 label='Opening time'
-                                                defaultValue={thisUser.OpeningTime}
+                                                value={thisUser.OpeningTime}
                                                 renderInput={(params) => <TextField {...params} />}
                                             />
                                         </LocalizationProvider>
@@ -133,7 +148,7 @@ const VendorProfile = (props) => {
                                             <TimePicker 
                                                 readOnly
                                                 label='Closing time'
-                                                defaultValue={thisUser.ClosingTime}
+                                                value={thisUser.ClosingTime}
                                                 renderInput={(params) => <TextField {...params} />}
                                             />
                                         </LocalizationProvider>

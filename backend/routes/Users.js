@@ -1,8 +1,8 @@
-var express = require("express");
-var Router = express.Router();
+const express = require("express");
+const Router = express.Router();
 // Load User model
 const User = require("../models/Users");
-
+const bcrypt = require("bcrypt");
 // GET request 
 // Getting all the users
 Router.get("/", function(req, res) {
@@ -21,54 +21,60 @@ Router.get("/", function(req, res) {
 // POST request 
 // Add a user to db
 Router.post("/register", async (req, res) => {
-    const registerData = req.body
+    const registerData = req.body;
+    await bcrypt.hash(password, salt);
+
+    const existingUser = await User.findOne({ Email: registerData.Email});
+    if (existingUser)
+        return res.status(400).json({errMsg: "Account with this email already exists"});
+    
+    const salt = await bcrypt.genSalt();
+    const Password = await bcrypt.hash(registerData.Password, salt);
+
     if (registerData.userStatus === 'Vendor') {
         const newUser = new User({
             Name: registerData.Name,
             Email: registerData.Email,
             date: registerData.date,
-            Password: registerData.Password,
+            Password: Password,
             ContactNo: registerData.ContactNo,
             userStatus: registerData.userStatus,
             ShopName: registerData.ShopName,
             OpeningTime: registerData.OpeningTime,
             ClosingTime: registerData.ClosingTime
         });
-        // await
         newUser
             .save()
             .then(user => {
                 res.status(200).json(user);
             })
             .catch(err => {
-                res.status(400).send(err);
+                res.status(500).json({errMsg: err.message});
             });
     } else {
         const newUser = new User({
             Name: registerData.Name,
             Email: registerData.Email,
             date: registerData.date,
-            Password: registerData.Password,
+            Password: Password,
             ContactNo: registerData.ContactNo,
             userStatus: registerData.userStatus,
-            // ShopName: 'JC',
             Age: registerData.Age,
             BatchName: registerData.BatchName
         });
-        // await
         newUser.save()
             .then(user => {
                 res.status(200).json(newUser);
             })
             .catch(err => {
-                res.status(400).json(err);
+                res.status(500).json({errMsg: err.message});
             });
     }
 });
 
 // POST request 
 // Login
-Router.post("/login", (req, res) => {
+Router.post("/login", async (req, res) => {
 	const Email = req.body.Email;
     const Password = req.body.Password;
 
@@ -76,14 +82,15 @@ Router.post("/login", (req, res) => {
         code: 0,
         user: null,
         type: ''
-    };
+    };  
 	// Find user by email
     User.findOne({ Email })
     .then((users) => {
         if (!users) {
             res.json(respo);
         } else {
-            if (users.Password === Password) {
+            const passwordMatch = await bcrypt.compare(Password, users.Passworsd);
+            if (passwordMatch) {
                 respo.code = 1;
                 respo.user = users;
                 respo.type = users.userStatus;
@@ -93,52 +100,73 @@ Router.post("/login", (req, res) => {
                 res.json(respo);
             }
         }
-    });          
+    })
+    .catch (err => res.status(500).json({errMsg: err.message}));
 });
 
 
 // EDIT profile
 Router.post('/edit', async (req, res) => {
-    const user = req.body;
-    console.log('UserType: ', user.userStatus);
-    console.log(user);
-    if (user.userStatus === 'Buyer') {
-        await User.findOneAndUpdate({_id: user._id}, {
-            $set: {
-                Name: user.Name,
-                Password: user.Password,
-                ContactNo: user.ContactNo,
-                Age: user.Age,
-                BatchName: user.BatchName
-            }
-        }, {new: true, upsert: true}, 
-            (err, doc)=>{
+    if (req.body.changePassword) {
+        const salt = await bcrypt.genSalt();
+        const Password = await bcrypt.hash(req.body.newPassword, salt);
+        const userId = req.body._id;
+        await User.findOneAndUpdate({_id: userId}, {
+            $set: {Password: Password}
+        }, {new: true}, 
+            (err, doc) => {
                 if (err) {
                     console.log(err);
+                    res.status(500).json({errMsg: err.message});
                 } else {
                     console.log(doc); 
                     res.json(doc);
                 }
             });
     } else {
-        await User.findOneAndUpdate({_id: user._id}, {
-            $set: {
-                Name: user.Name,
-                Password: user.Password,
-                ContactNo: user.ContactNo,
-                ShopName: user.ShopName,
-                OpeningTime: user.OpeningTime,
-                ClosingTime: user.ClosingTime
-            }
-        }, {new: true, upsert: true}, 
-        (err, doc)=>{
-            if (err) {
-                console.log(err);
-            } else {
-                console.log(doc); 
-                res.json(doc);
-            }
-        });
+        const user = req.body.user;
+        console.log('UserType: ', user.userStatus);
+        console.log(user);
+        if (user.userStatus === 'Buyer') {
+            await User.findOneAndUpdate({_id: user._id}, {
+                $set: {
+                    Name: user.Name,
+                    Email: user.Email,
+                    ContactNo: user.ContactNo,
+                    Age: user.Age,
+                    BatchName: user.BatchName
+                }
+            }, {new: true}, 
+                (err, doc)=>{
+                    if (err) {
+                        console.log(err);
+                        res.status(500).json({errMsg: err.message});
+                    } else {
+                        console.log(doc); 
+                        res.json(doc);
+                    }
+                });
+        } else {
+            await User.findOneAndUpdate({_id: user._id}, {
+                $set: {
+                    Name: user.Name,
+                    Email: user.Email,
+                    ContactNo: user.ContactNo,
+                    ShopName: user.ShopName,
+                    OpeningTime: user.OpeningTime,
+                    ClosingTime: user.ClosingTime
+                }
+            }, {new: true}, 
+            (err, doc)=>{
+                if (err) {
+                    console.log(err);
+                    res.status(500).json({errMsg: err.message});
+                } else {
+                    console.log(doc); 
+                    res.json(doc);
+                }
+            });
+        }
     }
 });
 

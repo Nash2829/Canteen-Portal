@@ -4,16 +4,13 @@ const app = express();
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
+require('dotenv').config();
 const PORT = 4000 || process.env.PORT;
-const atlasUser = 'admin';
-const pass = 'admin';
-const dbname = 'test';
-const DB = 'mongodb+srv://' + atlasUser + ':' + pass + '@cluster0.2rqen.mongodb.net/' + dbname + '?retryWrites=true&w=majority'
+const MONGO_DB_URI = process.env.MONGO_URI;
 
-// routes
 var testAPIRouter = require("./routes/testAPI");
 var UserRouter = require("./routes/Users");
-// var foodItemRouter = require("./routes/food");
+var foodItemRouter = require("./routes/food");
 
 
 // meta JS tasks
@@ -25,14 +22,14 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Connection to MongoDB
-mongoose.connect(DB, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: true })
+mongoose.connect(MONGO_DB_URI, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: true })
         .then(() => console.log("MongoDB database connection established successfully !"))
         .catch((err) => console.log(err));
 
 // setup API endpoints
 app.use("/testAPI", testAPIRouter);
 app.use("/user", UserRouter);
-// app.use("/vendor", vendor);
+app.use("/food", foodItemRouter);
 
 
 // checks if the server is established the specified PORT number
