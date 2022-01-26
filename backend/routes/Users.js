@@ -22,7 +22,6 @@ Router.get("/", function(req, res) {
 // Add a user to db
 Router.post("/register", async (req, res) => {
     const registerData = req.body;
-    await bcrypt.hash(password, salt);
 
     const existingUser = await User.findOne({ Email: registerData.Email});
     if (existingUser)
@@ -85,13 +84,14 @@ Router.post("/login", async (req, res) => {
     };  
 	// Find user by email
     User.findOne({ Email })
-    .then((users) => {
+    .then(async (users) => {
         if (!users) {
             res.json(respo);
         } else {
-            const passwordMatch = await bcrypt.compare(Password, users.Passworsd);
+            const passwordMatch = await bcrypt.compare(Password, users.Password);
             if (passwordMatch) {
                 respo.code = 1;
+                delete users.Password;
                 respo.user = users;
                 respo.type = users.userStatus;
                 res.json(respo);
@@ -108,19 +108,27 @@ Router.post("/login", async (req, res) => {
 // EDIT profile
 Router.post('/edit', async (req, res) => {
     if (req.body.changePassword) {
+
+        const userId = req.body._id;
+        const existingUser = await User.findOne({_id: userId});
+        const passwordMatch = await bcrypt.compare(req.body.currPass, existingUser.Password);
+        if (!passwordMatch) {
+            return res.status(400).json({errMsg: "The current password field does not match your current password."});
+        }
+
         const salt = await bcrypt.genSalt();
         const Password = await bcrypt.hash(req.body.newPassword, salt);
-        const userId = req.body._id;
-        await User.findOneAndUpdate({_id: userId}, {
-            $set: {Password: Password}
-        }, {new: true}, 
+
+        User.findOneAndUpdate({_id: userId}, 
+            {Password: Password}
+        , {new: true}, 
             (err, doc) => {
                 if (err) {
                     console.log(err);
                     res.status(500).json({errMsg: err.message});
                 } else {
                     console.log(doc); 
-                    res.json(doc);
+                    res.status(200).send("OK");
                 }
             });
     } else {
@@ -128,44 +136,42 @@ Router.post('/edit', async (req, res) => {
         console.log('UserType: ', user.userStatus);
         console.log(user);
         if (user.userStatus === 'Buyer') {
-            await User.findOneAndUpdate({_id: user._id}, {
-                $set: {
-                    Name: user.Name,
-                    Email: user.Email,
-                    ContactNo: user.ContactNo,
-                    Age: user.Age,
-                    BatchName: user.BatchName
-                }
+            User.findOneAndUpdate({_id: user._id}, 
+            {
+                Name: user.Name,
+                ContactNo: user.ContactNo,
+                Age: user.Age,
+                BatchName: user.BatchName
             }, {new: true}, 
                 (err, doc)=>{
                     if (err) {
                         console.log(err);
                         res.status(500).json({errMsg: err.message});
                     } else {
-                        console.log(doc); 
+                        console.log("BUYER: ", doc); 
                         res.json(doc);
                     }
-                });
+                }
+            );
         } else {
-            await User.findOneAndUpdate({_id: user._id}, {
-                $set: {
-                    Name: user.Name,
-                    Email: user.Email,
-                    ContactNo: user.ContactNo,
-                    ShopName: user.ShopName,
-                    OpeningTime: user.OpeningTime,
-                    ClosingTime: user.ClosingTime
-                }
+            User.findOneAndUpdate({_id: user._id}, 
+            {
+                Name: user.Name,
+                ContactNo: user.ContactNo,
+                ShopName: user.ShopName,
+                OpeningTime: user.OpeningTime,
+                ClosingTime: user.ClosingTime
             }, {new: true}, 
-            (err, doc)=>{
-                if (err) {
-                    console.log(err);
-                    res.status(500).json({errMsg: err.message});
-                } else {
-                    console.log(doc); 
-                    res.json(doc);
+                (err, doc)=>{
+                    if (err) {
+                        console.log(err);
+                        res.status(500).json({errMsg: err.message});
+                    } else {
+                        console.log("VENDOR: ", doc); 
+                        res.json(doc);
+                    }
                 }
-            });
+            );
         }
     }
 });

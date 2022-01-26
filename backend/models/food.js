@@ -4,16 +4,11 @@ const Schema = mongoose.Schema;
 const TAGS = ["Beverage", "Hot", "Cold", "Meal", "Snacks", "Spicy", "Very spicy", "Sweet", "Dessert", "Vegan"]
 const ADD_ONS = ["Cheese", "Butter", "Ketchup", "Schezwan", "Mayonnaise", "Mustard", "Peri peri", "Chocolate", "Milkmaid", "Garlic dip"]
 
-// const addOnSchema = new Schema({
-//     Name: {
-//         type: Number,
-//         default: 0
-//     },
-//     Price: {
-//         type: Number,
-//         default: 0
-//     }
-// });
+const addOnSchema = new Schema({
+    Name: {type: Number}, 
+    Price: {type: Number, default: 0}
+}, { _id : false });
+
 
 // Create Schema
 const foodItemSchema = new Schema({
@@ -25,21 +20,25 @@ const foodItemSchema = new Schema({
         type: Number, 
         required: false
     },
-    Rating: { 
-        type: Number
+    Rating: {
+        type: Number  
     },
     Veg: { 
         type: Boolean,
         required: false,
         default: true
     },
-    AddOns: [{Name: {type: Number}, Price: {type: Number, default: 0}}],
+    AddOns: [addOnSchema],
     Tags: {
-        type: NumberInt,
+        type: Number,
         default: 0
     },
     VendorID: {
         type: Schema.Types.ObjectId,
+        required: false
+    },
+    ShopName: {
+        type: String,
         required: false
     }
 });

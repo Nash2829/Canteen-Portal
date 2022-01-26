@@ -117,7 +117,7 @@ const UsersList = (props) => {
               <Autocomplete
                 id="combo-box-demo"
                 options={users}
-                getOptionLabel={(option) => option.name}
+                getOptionLabel={(option) => option.Name}
                 fullWidth
                 renderInput={(params) => (
                   <TextField
@@ -152,8 +152,8 @@ const UsersList = (props) => {
                   <TableRow key={ind}>
                     <TableCell>{ind}</TableCell>
                     <TableCell>{user.date}</TableCell>
-                    <TableCell>{user.name}</TableCell>
-                    <TableCell>{user.email}</TableCell>
+                    <TableCell>{user.Name}</TableCell>
+                    <TableCell>{user.Email}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

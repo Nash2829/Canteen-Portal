@@ -4,25 +4,21 @@ const app = express();
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
-require('dotenv').config();
-const PORT = 4000 || process.env.PORT;
-const MONGO_DB_URI = process.env.MONGO_URI;
+const PORT = 4000
+const MONGO_DB_URI = 'mongodb+srv://admin:admin@cluster0.2rqen.mongodb.net/test?retryWrites=true&w=majority';
 
 var testAPIRouter = require("./routes/testAPI");
 var UserRouter = require("./routes/Users");
 var foodItemRouter = require("./routes/food");
 
 
-// meta JS tasks
-// cors -> Cross origin resource sharing 
-//          - queries from browser
-//          - API request (resource) from browser to local
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Connection to MongoDB
-mongoose.connect(MONGO_DB_URI, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: true })
+mongoose.connect(MONGO_DB_URI, 
+        { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: false })
         .then(() => console.log("MongoDB database connection established successfully !"))
         .catch((err) => console.log(err));
 

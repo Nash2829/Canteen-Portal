@@ -6,8 +6,10 @@ import Home from "./components/common/Home";
 import Login from "./components/common/Login";
 import Register from "./components/common/Register";
 import Navbar from "./components/templates/Navbar";
-import VendorProfile from "./components/users/Vendor";
-import BuyerProfile from "./components/users/Buyer";
+import VendorProfile from "./components/vendor/Vendor";
+import BuyerProfile from "./components/buyer/Buyer";
+import FoodMenu from "./components/vendor/FoodMenu";
+import AddFoodItem from "./components/vendor/AddItem";
 
 const Layout = (props) => {
   return (
@@ -32,6 +34,8 @@ function App() {
           <Route path="vendor" element={<VendorProfile />} />
           <Route path="buyer" element={<BuyerProfile />} />
           <Route path="register" element={<Register />} />
+          <Route path="vendor/shop-menu" element={<FoodMenu />} />
+          <Route path="vendor/add-item" element={<AddFoodItem />} />
         </Route>
       </Routes>
     </BrowserRouter>
