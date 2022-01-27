@@ -50,7 +50,6 @@ const UserSchema = new Schema({
 		type: Date, 
         required: false
     },
-
     Wallet: { 
         type: Number, 
         required: false

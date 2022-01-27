@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Paper from "@mui/material/Paper";
 import Grid from "@mui/material/Grid";
+import Box from '@mui/material/Box';
 import TableCell from "@mui/material/TableCell";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
@@ -21,6 +22,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import DeleteIcon from '@mui/icons-material/Delete';
+import Slider from '@mui/material/Slider';
 import { useNavigate } from 'react-router-dom';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -30,56 +32,84 @@ import DialogTitle from '@mui/material/DialogTitle';
 import MuiInput from '@mui/material/Input';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormControl from '@mui/material/FormControl';
-import FormLabel from '@mui/material/FormLabel';
-import FormGroup from '@mui/material/FormGroup';
-
-
 
 const TAGS = ["Beverage", "Hot", "Cold", "Meal", "Snacks", "Spicy", "Very spicy", "Sweet", "Dessert", "Vegan"]
 const ADD_ONS = ["Cheese", "Butter", "Ketchup", "Schezwan", "Mayonnaise", "Mustard", "Peri peri", "Chocolate", "Milkmaid", "Garlic dip"]
 const indices = new Array(10).fill().map((_, idx) => idx);
 
 
-const FoodMenu = (props) => {
+const BuyerFoodMenu = (props) => {
     const navigate = useNavigate();
 
     const Input = styled(MuiInput)`
     width: 60px;
     `;
-    const [open, setOpen] = useState(false);
 
     const user = JSON.parse(localStorage.getItem('user'))
     const userID = user._id;
+    const ShopName = user.ShopName;
 
     const [foodMenu, setFoodMenu] = useState([]);
+    const [sortedMenu, setSortedMenu] = useState([]);
     const [sortByPrice, setSortByPrice] = useState(true);
+    const [searchText, setSearchText] = useState('');
 
-    const [editItem, setEditItem] = useState({
-        _id: 0, Name: '', Tags: 0, AddOns: [], Price: 0, Veg: true
-    });
+    const [open, setOpen] = useState(false);
 
-    const handleChangeEdit = (prop) => (event) => {
-        setEditItem({...editItem, [prop]: event.target.value});
+    const [currOrder, setCurrOrder] = useState({food: {
+        Name: '', ShopName: '', Price: 0, AddOns: []
+    }, quantity: 0, addOn: ''});
+  
+    const handleClose = () => {
+        setCurrOrder({food: {
+            Name: '', ShopName: '', Price: 0, AddOns: [], VendorID: null
+        }, quantity: 0, addOn: ''})
+        setOpen(false);
+    };
+
+    const placeOrder = () => {
+        setOpen(false);
+        let addOnPrice = 0;
+        currOrder.food.AddOns.forEach(addOn => {addOnPrice += addOn.Price;});
+        const Totall = (currOrder.food.Price + addOnPrice) * currOrder.quantity;
+        axios
+            .post('http://localhost:4000/order/place', {
+                foodItem: currOrder.food.Name,
+                VendorID: currOrder.food.VendorID,
+                BuyerID: userID,
+                Price: currOrder.food.Price,
+                Quantity: currOrder.quantity,
+                AddOns: currOrder.food.AddOns.map((addOn) => ADD_ONS[addOn.Name]).join(', '),
+                Veg: currOrder.food.Veg,
+                Total: Totall,
+                Rating: 0,
+                Status: 'PLACED'
+            }).then((response) => {
+                console.log(response.data);
+                swal(`Order placed`, 'Your order of ₹' + Totall + 'has been placed. Please wait till the chef prepares it.', `success`);
+            }).catch((err) => {
+                console.log(err.message);
+            });
+        setCurrOrder({food: {
+            Name: '', ShopName: '', Price: 0, AddOns: []
+        }, quantity: 0, addOn: ''})
     }
+
+    const changeQuantity = (event) => {
+        setCurrOrder({...currOrder, quantity:(event.target.value < 0 ? 0 : event.target.value)});
+    };
 
     useEffect(() => {
         console.log(userID);
         axios
-            .get(`http://localhost:4000/food?vendorid=${userID}`)
+            .get('http://localhost:4000/food')
             .then((response) => {
                 setFoodMenu(response.data);
-                setEditItem({
-                    _id: 0, Name: '', Tags: 0, AddOns: [], Price: 0, Veg: true
-                });
+                setSortedMenu(response.data);
+                setSearchText('');
             })
             .catch(err => {
-                console.log('Error!!!  ', err); 
-                console.log('Err.Message: ', err.message)
-                console.log("GET FOOD MENU ERROR MSG: ", err.response.errMsg);
+                console.log('Err.Message: ', err.errMsg)
             })
     }, []);
 
@@ -95,49 +125,14 @@ const FoodMenu = (props) => {
         setSortByPrice(!flag);
     };
 
-    const addFoodItem = (event) => {
-        event.preventDefault();
-        navigate('/vendor/add-item')
-    }
-
     const getTags = (tagSet) => {
         let tagList = [];
         TAGS.forEach((tag, idx) => {if ((tagSet >> idx) & 1) tagList.push(tag);})
         return tagList;
     }
 
-    const handleClose = () => {
-        setEditItem({
-            _id: 0, Name: '', Tags: 0, AddOns: [], Price: 0, Veg: true
-        }); 
-        setOpen(false);
-    };
-
-    const onEditItem = () => {
-        axios
-            .post('http://localhost:4000/food/edit-item', {
-                Name: editItem.Name, 
-                VendorID: userID, 
-                Price: editItem.Price, 
-                Veg: editItem.Veg
-            }).then((response) => {
-                console.log(response.data);
-                swal('Edited successfully', `${editItem.Name} has been edited successfully.` ,'success');
-            }).catch((err) => console.log(err));
-        setEditItem({
-            _id: 0, Name: '', Tags: 0, AddOns: [], Price: 0, Veg: true
-        }); 
-        setOpen(false);
-    }
-
   return (
     <div align={'center'} >
-     
-        <Grid item xs={12} align={'center'}>
-            <Button variant='contained' onClick={addFoodItem}>
-                Add Food Item
-            </Button>
-        </Grid>
 
         <Grid item xs={12} md={9} lg={9}>
             <Paper>
@@ -145,7 +140,8 @@ const FoodMenu = (props) => {
                     <TableHead>
                         <TableRow>
                             <TableCell> Sr No.</TableCell>
-                            <TableCell>Name</TableCell>
+                            <TableCell>Food item</TableCell>
+                            <TableCell>Shop</TableCell>
                             <TableCell>
                                 {" "}
                                 <Button onClick={sortChange}>
@@ -170,6 +166,7 @@ const FoodMenu = (props) => {
                         <TableRow key={ind}>
                             <TableCell>{ind + 1}</TableCell>
                             <TableCell>{user.Name}</TableCell>
+                            <TableCell>{user.ShopName}</TableCell>
                             <TableCell>{user.Price}</TableCell>
                             <TableCell>{user.Veg ? 'Veg' : 'Non-veg'}</TableCell>
                             <TableCell>{ user.AddOns.map((addOn) => (
@@ -178,106 +175,73 @@ const FoodMenu = (props) => {
                             <TableCell>{getTags(user.Tags).map((tag) => (<Chip label={tag} variant='outlined' />))}</TableCell>
                             <TableCell>{user.Rating}</TableCell>
                             <TableCell>
-                                <Button variant="outlined" startIcon={<DeleteIcon />} onClick={() => {
-                                    const itemName = user.Name;
-                                    swal({
-                                        title: "Are you sure?",
-                                        text: "Once deleted, you will not be able to recover this food item!",
-                                        icon: "warning",
-                                        buttons: true,
-                                        dangerMode: true,
-                                    }).then((willDelete) => {
-                                        if (willDelete) {
-                                            axios.post('http://localhost:4000/food/delete', {_id: user._id})
-                                            .then((resp) => {
-                                                console.log(resp);
-                                                swal({
-                                                    title: `Deleted ${itemName}`,
-                                                    text: "Poof! Your food item has been deleted!", 
-                                                    icon: "success",
-                                                }).then(() => window.location='/vendor/shop-menu');
-                                            }).catch(error => console.log(error.Message));
-                                            
-                                            
-                                        } else {
-                                            swal("Your food item is safe!");
-                                        }
-                                    });
-                                    
-                                }} >
-                                    Delete Item
-                                </Button>
-                            </TableCell>
-                            <TableCell>
                                 <Button variant="outlined" onClick={() => {
-                                    setEditItem({
-                                        _id: user._id,
-                                        Name: user.Name, 
-                                        Price: user.Price,
-                                        Veg: user.Veg,
-                                        Tags: user.Tags,
-                                        AddOns: user.AddOns
-                                    });
+                                    setCurrOrder({food: user, quantity: 0});
                                     setOpen(true);
                                 }}>
-                                    Edit Item
+                                    Buy item
                                 </Button>
                             </TableCell>
                         </TableRow>
                         ))}
                     </TableBody>
                 </Table>
+
                 <div>
                 <Dialog open={open} onClose={handleClose}>
-                    <DialogTitle>Edit {editItem.Name}</DialogTitle>
+                    <DialogTitle>Place order</DialogTitle>
                     <DialogContent>
                     <DialogContentText>
-                        <br />
+                        Buy Now!!!
                     </DialogContentText>
-                    <Grid item xs={12}>
-                            <TextField
-                                size='small'
-                                label='Food item name'
-                                InputProps={{readOnly: true}}
-                                defaultValue={editItem.Name}
-                            />
-                        </Grid>
-                        <br />
-                        <DialogContentText>
-                                Edit details of {editItem.Name}:
-                        </DialogContentText>
-                        <DialogContentText>
-                                <br />
-                        </DialogContentText>
                     <Grid container align={'center'} spacing={2}
                         >
                         <Grid item xs={12}>
                             <TextField
                                 size='small'
-                                label='Price'
-                                value={editItem.Price}
-                                onChange={handleChangeEdit('Price')}
+                                label='Food item name'
+                                InputProps={{readOnly: true}}
+                                defaultValue={currOrder.food.Name}
                             />
                         </Grid>
                         <Grid item xs={12}>
-                            <FormControl>
-                                <FormLabel id="demo-radio-buttons-group-label">Veg or Non-veg?</FormLabel>
-                                <RadioGroup
-                                    aria-labelledby="demo-radio-buttons-group-label"
-                                    value={editItem.Veg}
-                                    onChange={handleChangeEdit('Veg')}
-                                    name="radio-buttons-group"
-                                >
-                                    <FormControlLabel value={true} control={<Radio />} label="Veg" />
-                                    <FormControlLabel value={false} control={<Radio />} label="Non-veg" />
-                                </RadioGroup>
-                            </FormControl>
+                            <TextField
+                                size='small'
+                                label='Shop'
+                                InputProps={{readOnly: true}}
+                                defaultValue={currOrder.food.ShopName}
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                size='small'
+                                label='Price'
+                                InputProps={{readOnly: true}}
+                                defaultValue={currOrder.food.Price}
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <Typography  gutterBottom>
+                                Quantity
+                            </Typography>
+                            <Input
+                                value={currOrder.quantity}
+                                onChange={changeQuantity}
+                                size="small"
+                                    inputProps={{
+                                    step: 1,
+                                    min: 0,
+                                    max: 10,
+                                    type: 'number',
+                                    'aria-labelledby': 'input-slider',
+                                }}
+                            />
                         </Grid>
                     </Grid>
                     </DialogContent>
                     <DialogActions>
                     <Button onClick={handleClose}>Cancel</Button>
-                    <Button onClick={onEditItem}>Save Edited Changes</Button>
+                    <Button onClick={placeOrder}>Place order</Button>
                     </DialogActions>
                 </Dialog>
                 </div>
@@ -287,4 +251,4 @@ const FoodMenu = (props) => {
   );
 };
 
-export default FoodMenu;
+export default BuyerFoodMenu;

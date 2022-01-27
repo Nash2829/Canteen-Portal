@@ -10,6 +10,7 @@ const MONGO_DB_URI = 'mongodb+srv://admin:admin@cluster0.2rqen.mongodb.net/test?
 var testAPIRouter = require("./routes/testAPI");
 var UserRouter = require("./routes/Users");
 var foodItemRouter = require("./routes/food");
+var orderRouter = require("./routes/order");
 
 
 app.use(cors());
@@ -26,6 +27,7 @@ mongoose.connect(MONGO_DB_URI,
 app.use("/testAPI", testAPIRouter);
 app.use("/user", UserRouter);
 app.use("/food", foodItemRouter);
+app.use("/order", orderRouter);
 
 
 // checks if the server is established the specified PORT number

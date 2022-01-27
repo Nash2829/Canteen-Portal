@@ -28,16 +28,16 @@ const UsersList = (props) => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:4000/user")
-      .then((response) => {
-        setUsers(response.data);
-        setSortedUsers(response.data);
-        setSearchText("");
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, []);
+        .get("http://localhost:4000/user")
+        .then((response) => {
+            setUsers(response.data);
+            setSortedUsers(response.data);
+            setSearchText("");
+        })
+        .catch((error) => {
+            console.log(error);
+        });
+    }, []);
 
   const sortChange = () => {
     let usersTemp = users;

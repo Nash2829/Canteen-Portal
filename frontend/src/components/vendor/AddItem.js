@@ -57,6 +57,10 @@ const AddFoodItem = (props) => {
         setTagBool(tmp);
     }
 
+    const onChangeVeg = (e) => {
+        setVeg(!e.target.value);
+    }
+
     const handleChangeBool = (idx) => event => {
         const tmp = [...addOnBool]; tmp[idx] = event.target.checked; 
         setAddOnBool(tmp);
@@ -75,9 +79,6 @@ const AddFoodItem = (props) => {
     }
     const onChangeRating = (e) => {
         setRating(e.target.value);
-    }
-    const onChangeVeg = (e) => {
-        setVeg(e.target.value);
     }
 
     const onAddFoodItem = (event) => {
@@ -138,6 +139,8 @@ const AddFoodItem = (props) => {
                                 <FormLabel id="demo-radio-buttons-group-label">Veg or Non-veg?</FormLabel>
                                 <RadioGroup
                                     aria-labelledby="demo-radio-buttons-group-label"
+                                    value={Veg}
+                                    onChange={onChangeVeg}
                                     // defaultValue="female"
                                     name="radio-buttons-group"
                                 >

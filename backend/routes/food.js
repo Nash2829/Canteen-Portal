@@ -8,16 +8,29 @@ const foodImport = require("../models/food");
 const foodItem = foodImport.foodItem;
 
 Router.get("/", function(req, res) {
+    console.log(req.query.vendorid)
     // console.log("Vendor ID: ", req.body);
-    foodItem.find(function(err, users) {
-		if (err) {
-			console.log(err);
-            res.status(500).json({errMsg: err.message});
-		} else {
-            console.log(users);
-			res.status(200).json(users);
-		}
-	});
+    if (req.query.vendorid === null || req.query.vendorid === undefined) {
+        foodItem.find(function(err, users) {
+            if (err) {
+                console.log(err);
+                res.status(500).json({errMsg: err.message});
+            } else {
+                console.log(users);
+                res.status(200).json(users);
+            }
+        });
+    } else {
+        foodItem.find({VendorID: req.query.vendorid}, function(err, users) {
+            if (err) {
+                console.log(err);
+                res.status(500).json({errMsg: err.message});
+            } else {
+                console.log(users);
+                res.status(200).json(users);
+            }
+        });
+    }
 });
 
 // Add or insert food item 
@@ -28,8 +41,6 @@ Router.post("/insert-item", async (req, res) => {
     if (existingFoodItem) {
         res.status(400).json({errMsg: "You already have a food item by this name in your menu."});
     } else {
-        let tagSet = 0 >>> 0;
-        // FoodItem.Tags.forEach((tag) => tagSet |= (1 << (TAGS.get(tag))));
         const newFoodItem = new foodItem(FoodItem);
         newFoodItem
             .save()
@@ -43,15 +54,18 @@ Router.post('/edit-item', async (req, res) => {
     console.log(req.body);
     const FoodItem = req.body;
     foodItem.findOneAndUpdate({ Name: FoodItem.Name, VendorID: FoodItem.VendorID },
-        FoodItem, 
+        {
+            Price: FoodItem.Price,
+            Veg: FoodItem.Veg
+        }, 
         {new: true},
         (err, doc) => {
             if (err) {
                 console.log(err);
                 res.status(500).json({errMsg: err.message});
             } else {
-                console.log("FOOD ITEM: ", doc); 
-                res.json(doc);
+                console.log("FOOD ITEM: ", doc.Name); 
+                res.status(200).send(`OK, edited ${doc.Name}`);
             }
         }
     );
@@ -62,6 +76,7 @@ Router.post('/delete', async (req, res) => {
     const ID = req.body._id;
     foodItem.deleteOne({_id: ID}).then(() => {
         console.log('Deleted: ', ID);
+        res.status(200).send("OK");
     }).catch((error) => {
         console.log(error);
         res.status(500).json({errMsg: error.message});
