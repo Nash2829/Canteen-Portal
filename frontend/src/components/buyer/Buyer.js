@@ -39,6 +39,29 @@ const VendorProfile = (props) => {
     const [currPass, setCurrPass] = useState('');
     const [newPass, setNewPass] = useState('');
     const [confirmNewPass, setConfirmNewPass] = useState('');
+    const [addMoney, setAddMoney] = useState(0);
+
+    const onChangeMoney = (e) => {
+        setAddMoney(e.target.value);
+        let tmp = curr; tmp.Wallet = tmp.Wallet + addMoney;
+    }
+
+    const onAddMoney = (e) => {
+        if (addMoney < 0) {
+            swal({text: 'Please enter a valid amount to add money', icon: 'warning'})
+            .then((resp) => {if (resp) {setAddMoney(0); return;}});
+        }
+        e.preventDefault();
+        if (addMoney === 0) {return;}
+        axios
+            .post('https://localhost:4000/user/edit', {updateWallet: true, _id: curr._id, increment: addMoney})
+            .then((resp) => {
+                console.log(resp);
+                let tmp = curr; tmp.Wallet = Number(tmp.Wallet) + Number(addMoney);
+                localStorage.setItem('user', JSON.stringify(tmp));
+                window.location.reload();
+            }).catch((err) => {console.log(err);});
+    }
 
     const handleChange = (prop) => (event) => {
         setThisUser({ ...thisUser, [prop]: event.target.value });
@@ -74,7 +97,7 @@ const VendorProfile = (props) => {
                     console.log("Edited: ", res.data);
                     swal('Edited successfully', 'Your details have been updated.', 'success');
                 })
-                .catch((err)=>console.log(err.response.data.errMsg));
+                .catch((err)=>console.log(err.response.data));
             for (var i = 0; i < elements.length; i++) { elements[i].readOnly=true; }
             localStorage.setItem('user', JSON.stringify(thisUser));
             setButtonText('Edit');
@@ -95,7 +118,7 @@ const VendorProfile = (props) => {
                 })
                 .catch((err) => {
                     console.log(err.response.data);
-                    swal({icon: 'error', text: err.response.data.errMsg})
+                    swal({icon: 'error', text: err.response.data})
                 });
         } else {
             swal('Passwords don\'t match', 'Please confirm your new password correctly.', 'error');
@@ -126,7 +149,7 @@ const VendorProfile = (props) => {
                         p: 2,
                         display: 'flex',
                         flexDirection: 'column',
-                        height: 420,
+                        height: 500,
                     }}
                 >
                     <Grid container align={'center'}>
@@ -206,6 +229,8 @@ const VendorProfile = (props) => {
                         {buttonText === 'Submit' ?
                         <Grid item xs={6}>
                             <Grid container align={'center'} spacing={2}>
+                            <Grid item xs={12}>
+                            <Grid container align={'center'} spacing={2}>
                                 <Grid item xs={12}>
                                     <FormControl sx={{ m: 1, width: '25ch' }} variant="outlined">
                                         <InputLabel htmlFor="outlined-adornment-password">Current password</InputLabel>
@@ -245,7 +270,22 @@ const VendorProfile = (props) => {
                                         Change Password
                                     </Button>
                                 </Grid>
-                            </Grid>
+                            </Grid></Grid>
+                            <Grid item xs={12}>
+                            <Grid container align={'center'} spacing={2}>
+                                <Grid item xs={12}>
+                                    <TextField 
+                                        variant='outlined'
+                                        value={addMoney}
+                                        onChange={onChangeMoney}
+                                    />                                    
+                                </Grid>
+                                <Grid item xs={12}>
+                                    <Button variant='contained' onClick={onAddMoney}>
+                                        Add money
+                                    </Button>
+                                </Grid>
+                            </Grid></Grid></Grid>
                         </Grid>
                         : null}
                     </Grid>

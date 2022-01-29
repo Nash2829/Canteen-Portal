@@ -5,14 +5,39 @@ const User = require("../models/Users");
 const bcrypt = require("bcrypt");
 // GET request 
 // Getting all the users
-Router.get("/", function(req, res) {
-    User.find(function(err, users) {
-		if (err) {
-			console.log(err);
-		} else {
-			res.json(users);
-		}
-	})
+Router.get("/", async function(req, res) {
+    console.log(req.query.id);
+    console.log(req.query.vendorid);
+    if (req.query.vendorid === null || req.query.vendorid === undefined) {
+        if (req.query.id === null || req.query.id === undefined) {
+            await User.find(function(err, users) {
+                if (err) {
+                    console.log(err);
+                } else {
+                    res.json(users);
+                }
+            });
+        } else {
+            await User.findOne({_id: req.query.id}, function(err, users) {
+                if (err) {
+                    console.log(err);
+                } else {
+                    res.status(200).json(users);
+                }
+            });
+        }
+    } else {
+        await User.findOne({_id: req.query.vendorid}, function(err, users) {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log("OK");
+                console.log(users);
+                console.log({OpeningTime: users.OpeningTime, ClosingTime: users.ClosingTime});
+                res.json({OpeningTime: new Date(users.OpeningTime), ClosingTime: new Date(users.ClosingTime)});
+            }
+        });
+    }
 });
 
 // NOTE: Below functions are just sample to show you API endpoints working, for the assignment you may need to edit them
@@ -37,6 +62,7 @@ Router.post("/register", async (req, res) => {
             date: registerData.date,
             Password: Password,
             ContactNo: registerData.ContactNo,
+            Wallet: registerData.Wallet,
             userStatus: registerData.userStatus,
             ShopName: registerData.ShopName,
             OpeningTime: registerData.OpeningTime,
@@ -57,6 +83,7 @@ Router.post("/register", async (req, res) => {
             date: registerData.date,
             Password: Password,
             ContactNo: registerData.ContactNo,
+            Wallet: registerData.Wallet,
             userStatus: registerData.userStatus,
             Age: registerData.Age,
             BatchName: registerData.BatchName
@@ -132,6 +159,24 @@ Router.post('/edit', async (req, res) => {
                 }
             });
     } else {
+        if (req.body.updateWallet) {
+            console.log(req.body);
+            User.findOneAndUpdate({_id: req.body._id}, 
+                {
+                    $inc: {Wallet: req.body.increment}
+                }
+            , {new: true}, 
+                (err, doc) => {
+                    if (err) {
+                        console.log(err);
+                        res.status(500).json({errMsg: err.message});
+                    } else {
+                        console.log(doc); 
+                        res.status(200).send("OK");
+                    }
+                });
+            return;
+        }
         const user = req.body.user;
         console.log('UserType: ', user.userStatus);
         console.log(user);
@@ -149,7 +194,7 @@ Router.post('/edit', async (req, res) => {
                         res.status(500).json({errMsg: err.message});
                     } else {
                         console.log("BUYER: ", doc); 
-                        res.json(doc);
+                        res.status(200).send("OK");
                     }
                 }
             );
@@ -168,7 +213,7 @@ Router.post('/edit', async (req, res) => {
                         res.status(500).json({errMsg: err.message});
                     } else {
                         console.log("VENDOR: ", doc); 
-                        res.json(doc);
+                        res.status(200).send("OK");
                     }
                 }
             );

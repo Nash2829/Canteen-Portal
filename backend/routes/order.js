@@ -21,7 +21,7 @@ Router.get("/", async function(req, res) {
         order.find(function(err, orders) {
             if (err) {
                 console.log(err);
-                res.status(500).json({errMsg: err.message});
+                res.status(500).json(err);
             } else {
                 res.status(200).json(orders);
             }
@@ -37,12 +37,15 @@ Router.post("/place", async (req, res) => {
         foodItem: Order.foodItem,
         VendorID: Order.VendorID,
         BuyerID: Order.BuyerID,
-        Price: Order.Price,
+        VendorName: Order.VendorName,
+        buyerAge: Order.buyerAge,
+        buyerBatch: Order.buyerBatch,
         Quantity: Order.Quantity,
         AddOns: Order.AddOns,
         Veg: Order.Veg,
         Total: Order.Total,
         Rating: Order.Rating,
+        date: new Date(Order.date),
         Status: Order.Status 
     });
     newOrder
@@ -57,20 +60,37 @@ Router.post("/place", async (req, res) => {
 // Edit (change Status)
 Router.post('/status', async (req, res) => {
     const Order = req.body;
-    console.log(Order.Status);
-    await order.findOneAndUpdate({ _id: Order._id },
-        {Status: Order.Status}, 
-        {new: true},
-        (err, doc) => {
-            if (err) {
-                console.log(err);
-                res.status(500).json(err);
-            } else {
-                console.log("FOOD ITEM: ", doc); 
-                res.json(doc);
+    if (Order.RateOrder) {
+        console.log("Rating: ", Order.Rating);
+        order.findOneAndUpdate({ _id: Order._id },
+            {Rating: Order.Rating}, 
+            {new: true},
+            (err, doc) => {
+                if (err) {
+                    console.log(err);
+                    res.status(500).json(err);
+                } else {
+                    console.log("Rating, FOOD ITEM: ", doc.foodItem); 
+                    res.json(doc.Rating);
+                }
             }
-        }
-    );
+        );
+    } else {
+        console.log("Status: ", Order.Status);
+        order.findOneAndUpdate({ _id: Order._id },
+            {Status: Order.Status}, 
+            {new: true},
+            (err, doc) => {
+                if (err) {
+                    console.log(err);
+                    res.status(500).json(err);
+                } else {
+                    console.log("FOOD ITEM: ", doc.foodItem); 
+                    res.json(doc.foodItem);
+                }
+            }
+        );
+    }
 });
 
 

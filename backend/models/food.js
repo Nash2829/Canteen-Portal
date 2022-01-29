@@ -37,10 +37,18 @@ const foodItemSchema = new Schema({
         type: Schema.Types.ObjectId,
         required: false
     },
+    VendorName: {type: String },
     ShopName: {
         type: String,
         required: false
-    }
+    },
+    CanteenOpeningTime: {
+        type: Date    
+    }, 
+    CanteenClosingTime: {
+        type: Date
+    },
+    BuyersRated: {type: Number, default: 0}
 });
 
 module.exports = {

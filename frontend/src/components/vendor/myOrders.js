@@ -9,38 +9,15 @@ import TableRow from "@mui/material/TableRow";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import Divider from "@mui/material/Divider";
-import Autocomplete from "@mui/material/Autocomplete";
-import IconButton from "@mui/material/IconButton";
-import Chip from '@mui/material/Chip';
-import InputAdornment from "@mui/material/InputAdornment";
 import swal from 'sweetalert';
-import SearchIcon from "@mui/icons-material/Search";
-import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-import DeleteIcon from '@mui/icons-material/Delete';
-import Slider from '@mui/material/Slider';
-import { useNavigate } from 'react-router-dom';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import MuiInput from '@mui/material/Input';
 import Typography from '@mui/material/Typography';
-import { styled } from '@mui/material/styles';
 import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
 import SoupKitchenIcon from '@mui/icons-material/SoupKitchen';
 import TakeoutDiningIcon from '@mui/icons-material/TakeoutDining';
-
-const TAGS = ["Beverage", "Hot", "Cold", "Meal", "Snacks", "Spicy", "Very spicy", "Sweet", "Dessert", "Vegan"]
-const ADD_ONS = ["Cheese", "Butter", "Ketchup", "Schezwan", "Mayonnaise", "Mustard", "Peri peri", "Chocolate", "Milkmaid", "Garlic dip"]
-const indices = new Array(10).fill().map((_, idx) => idx);
-
+import emailjs from '@emailjs/browser';
+import{ init } from '@emailjs/browser';
+init("user_0YkPXkJ69El9vlkEyQLad");
 
 const VendorOrders = (props) => {
 
@@ -58,28 +35,45 @@ const VendorOrders = (props) => {
                 setOrders(response.data);
             })
             .catch(err => {
-                console.log('Err.Message: ', err.errMsg)
+                console.log('Err.Message: ', err)
             });
     }, []);
 
-    const getTags = (tagSet) => {
-        let tagList = [];
-        TAGS.forEach((tag, idx) => {if ((tagSet >> idx) & 1) tagList.push(tag);})
-        return tagList;
+    const DateAndTime = (date) => {
+        const d = new Date(date);
+        return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()} ${d.getHours()}:${d.getMinutes()}:${d.getSeconds()}`;
     }
 
-    const changeStatus = (orderId, status) => {
+
+    const changeStatus = (orderId, status, refund, vendorName) => {
         if (orders.reduce((prev, order) => prev + ((order.Status === 'ACCEPTED' || order.Status === 'COOKING') ? 1 : 0)) >= 10 && 
             status === 'ACCEPTED') {
             swal('Order overload', 'Please tend to the pending orders first. You can come to this order later.', 'warning');
             return;
         }
-        console.log("In changeStatus, params: ", orderId, " ", status);
+        if (status === 'REJECTED') {
+            console.log({_id: refund._id, updateWallet: true, increment: refund.amount});
+            axios
+                .post(`http://localhost:4000/user/edit`, {_id: refund._id, updateWallet: true, increment: refund.amount})
+                .then((response) => console.log(response, ` Refunded buyer ${refund.amount}`));
+        }
         axios
             .post(`http://localhost:4000/order/status`, {_id: orderId, Status: status})
             .then((resp) => {
                 console.log('Changed Status. ', resp);
-                window.location='/vendor/orders'
+                if (status === 'ACCEPTED' || status === 'REJECTED') {
+                    emailjs.send("service_yeu8n7h","template_rdkx7dc",{
+                        from_name: user.Name,
+                        message: (status === 'ACCEPTED' ? 
+                        `Your order has been accepted. Please wait for the chef to prepare it.`
+                        : `Sorry for the inconvenience. Your order has been rejected. Try again later.`)
+                    }).then((resp) => {
+                        console.log('Email sent. ', resp.status, ' ', resp.text);
+                        window.location='/vendor/orders';
+                    }, (err) => console.log(err))
+                } else {
+                    window.location='/vendor/orders';
+                }
             })
             .catch((err) => console.log(err));
     }
@@ -94,13 +88,13 @@ const VendorOrders = (props) => {
                             variant='contained'
                             startIcon={<CheckIcon />}
                             color='success'
-                            onClick={() => changeStatus(props._id, 'ACCEPTED')}
+                            onClick={() => changeStatus(props._id, 'ACCEPTED', props.refundBuyer, props.vendorName)}
                             >Accept</Button>
                         <Button 
                             variant='contained'
                             startIcon={<ClearIcon />}
                             color='error'
-                            onClick={() => changeStatus(props._id, 'REJECTED')}
+                            onClick={() => changeStatus(props._id, 'REJECTED', props.refundBuyer, props.vendorName)}
                             >Reject</Button>
                     </Box>
                 </>
@@ -157,10 +151,11 @@ return (
                     <TableHead>
                         <TableRow>
                             <TableCell> Sr No.</TableCell>
+                            <TableCell>Placed on</TableCell>
                             <TableCell>Food item</TableCell>
                             <TableCell>Veg/Non-veg</TableCell>
-                            <TableCell>Price</TableCell>
                             <TableCell>Add ons</TableCell>
+                            <TableCell>Quantity</TableCell>
                             <TableCell>Order total</TableCell>
                             <TableCell>Status</TableCell>
                         </TableRow>
@@ -169,13 +164,19 @@ return (
                         {orders.map((order, ind) => (
                         <TableRow key={ind}>
                             <TableCell>{ind + 1}</TableCell>
+                            <TableCell>{DateAndTime(order.date)}</TableCell>
                             <TableCell>{order.foodItem}</TableCell>
                             <TableCell>{order.Veg ? 'Veg' : 'Non-veg'}</TableCell>
-                            <TableCell>{'₹ ' + order.Price}</TableCell>
                             <TableCell>{order.AddOns}</TableCell>
+                            <TableCell>{order.Quantity}</TableCell>
                             <TableCell>{'₹ ' + order.Total}</TableCell>
                             <TableCell>
-                                <Print status={order.Status} _id={order._id} />
+                                <Print 
+                                    status={order.Status} 
+                                    _id={order._id} 
+                                    refundBuyer={{_id: order.BuyerID, amount: order.Total}}
+                                    vendorName={order.VendorName}
+                                />
                             </TableCell>
                         </TableRow>
                         ))}

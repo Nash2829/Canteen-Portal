@@ -23,6 +23,7 @@ const Register = (props) => {
 	const [Name, setName] = useState('');
 	const [Email, setEmail] = useState('');
 	const [date, setDate] = useState(null);
+    const [Money, setMoney] = useState(0);
 	const [Password, setPassword] = useState('');
     const [confirmPass, setConfirmPass] = useState('');
 	const [ContactNo, setContactNo] = useState(null);
@@ -33,11 +34,15 @@ const Register = (props) => {
 	const [BatchName, setBatchName] = useState('');
 
 	const [ShopName, setShopName] = useState('');
-	const [OpeningTime, setOpeningTime] = useState(Date.now());
-	const [ClosingTime, setClosingTime] = useState(Date.now());
+	const [OpeningTime, setOpeningTime] = useState(new Date());
+	const [ClosingTime, setClosingTime] = useState(new Date());
 
     const [showPassword, setShowPassword] = useState(false);
     const [showConfPass, setShowConfPass] = useState(false);
+
+    const onChangeMoney = (e) => {
+        setMoney(e.target.value);
+    };
 
     const handleClickShowConfPass = () => {
         setShowConfPass(!showConfPass);
@@ -105,20 +110,31 @@ const Register = (props) => {
         setAge(null);
         setBatchName('');
         setShopName('');
-        setOpeningTime(Date.now());
-        setClosingTime(Date.now());
+        setOpeningTime(null);
+        setClosingTime(null);
+        setMoney(null);
 	};
 
 	const onSubmit = (event) => {
 		event.preventDefault();
-
+        console.log(OpeningTime);
         if (Password === confirmPass) {
-
+            const bad = Boolean(ContactNo === null || ContactNo === 0 || Number(ContactNo) === NaN);
+            if (Name === '' || Email === '' || Password === '' || bad || Status === '') {
+                swal("Oops!", "Please fill all the fields!", "error");
+                return;
+            }
+                
             if (Status === 'Vendor') {
+                if (ShopName === '' || OpeningTime === null || ClosingTime === null) {
+                    swal("Oops!", "Please fill all the fields!", "error");
+                    return;
+                }
+
                 const newUser = {
                     Name: Name,
                     Email: Email,
-                    date: Date.now(),
+                    date: new Date(),
                     Password: Password,
                     ContactNo: ContactNo,
                     userStatus: Status,
@@ -137,15 +153,21 @@ const Register = (props) => {
                     .catch((err) => console.log(err));
             
             } else {
+
+                if (Age === null || BatchName === '' || Money === null) {
+                    swal("Oops!", "Please fill all the fields!", "error");
+                    return;
+                }
                 const newUser = {
                     Name: Name,
                     Email: Email,
-                    date: Date.now(),
+                    date: new Date(),
                     Password: Password,
                     ContactNo: ContactNo,
                     userStatus: Status,
                     Age: Age,
-                    BatchName: BatchName
+                    BatchName: BatchName,
+                    Wallet: Money
                 };
                 console.log(newUser);
                 axios
@@ -158,11 +180,10 @@ const Register = (props) => {
                     .catch((err) => console.log(err));
 
             }
+            resetInputs();
         } else {
             swal('Invalid', 'Please confirm your password correctly.', 'warning');
         } 
-
-		resetInputs();
 	};
 
 	return (
@@ -291,6 +312,7 @@ const Register = (props) => {
                                 value={ClosingTime}
                                 onChange={(newTime) => {
                                     setClosingTime(newTime);
+                                    console.log(OpeningTime);
                                   }}
                                 renderInput={(params) => <TextField {...params} />}
                             />
@@ -300,6 +322,14 @@ const Register = (props) => {
                 }
                 {Status === 'Buyer' && 
                     <>
+                    <Grid item xs={12}>
+                        <TextField
+                            label='Add money  '
+                            variant='outlined'
+                            value={Money}
+                            onChange={onChangeMoney}
+                        />
+                    </Grid>
                     <Grid item xs={12}>
                         <TextField
                             label='Age'

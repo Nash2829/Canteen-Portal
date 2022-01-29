@@ -102,7 +102,11 @@ const AddFoodItem = (props) => {
             AddOns: addOnList, 
             Tags: tagSet,
             VendorID: userID,
-            ShopName: ShopName
+            ShopName: ShopName,
+            VendorName: user.Name,
+            CanteenOpeningTime: user.OpeningTime,
+            CanteenClosingTime: user.ClosingTime,
+            BuyersRated: 0
         };
         console.log(newItem);
         axios

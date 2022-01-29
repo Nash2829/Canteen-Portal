@@ -64,9 +64,20 @@ const VendorProfile = (props) => {
                 .post('http://localhost:4000/user/edit', {user: thisUser, changePassword: false})
                 .then((res)=>{
                     console.log("Edited: ", res.data);
-                    swal('Edited successfully', 'Your details have been updated.', 'success');
+                    axios
+                        .post('http://localhost:4000/food/edit-item', {
+                            vendorEdited: true,
+                            VendorID: thisUser._id,
+                            COT: thisUser.OpeningTime,
+                            CCT: thisUser.ClosingTime,
+                            VendorName: thisUser.Name, 
+                            ShopName: thisUser.ShopName  
+                        }).then(() => {
+                            console.log("Edited food items sold by vendor.");
+                            swal('Edited successfully', 'Your details have been updated.', 'success');
+                        });
                 })
-                .catch((err)=>console.log(err.response.data.errMsg));
+                .catch((err)=>console.log(err.response.data));
             for (var i = 0; i < elements.length; i++) { elements[i].readOnly=true; }
             localStorage.setItem('user', JSON.stringify(thisUser));
             setButtonText('Edit');
@@ -87,7 +98,7 @@ const VendorProfile = (props) => {
                 })
                 .catch((err) => {
                     console.log(err.response.data);
-                    swal({icon: 'error', text: err.response.data.errMsg})
+                    swal({icon: 'error', text: err.response.data})
                 });
         } else {
             swal('Passwords don\'t match', 'Please confirm your new password correctly.', 'error');
@@ -118,7 +129,7 @@ const VendorProfile = (props) => {
                         p: 2,
                         display: 'flex',
                         flexDirection: 'column',
-                        height: 420,
+                        height: 480,
                     }}
                 >
                     <Grid container align={'center'}>
@@ -152,6 +163,15 @@ const VendorProfile = (props) => {
                                         onChange={handleChange('ContactNo')}
                                     />
                                 </Grid>
+                                <Grid item xs={12}>
+                                    <TextField
+                                        label='Shop Name'
+                                        variant='outlined'
+                                        value={thisUser.ShopName}
+                                        InputProps={{readOnly: true}}
+                                        onChange={handleChange('ContactNo')}
+                                    />
+                                </Grid>
 
                                 {buttonText === 'Edit' && (
                                     <><Grid item xs={12}>
@@ -181,7 +201,7 @@ const VendorProfile = (props) => {
                                             <TimePicker 
                                                 label='Opening time'
                                                 value={thisUser.OpeningTime}
-                                                onChange={(newTime) => setThisUser({...thisUser, ['OpeningTime'] : newTime})}
+                                                onChange={(newTime) => {setThisUser({...thisUser, ['OpeningTime'] : new Date(newTime)}); console.log(thisUser.OpeningTime)}}
                                                 renderInput={(params) => <TextField {...params} />}
                                             />
                                         </LocalizationProvider>
@@ -191,7 +211,7 @@ const VendorProfile = (props) => {
                                             <TimePicker 
                                                 label='Closing time'
                                                 value={thisUser.ClosingTime}
-                                                onChange={(newTime) => setThisUser({...thisUser, ['ClosingTime'] : newTime})}
+                                                onChange={(newTime) => setThisUser({...thisUser, ['ClosingTime'] : new Date(newTime)})}
                                                 renderInput={(params) => <TextField {...params} />}
                                             />
                                         </LocalizationProvider>
@@ -199,7 +219,7 @@ const VendorProfile = (props) => {
                                 }
                                 <Grid item xs={12} align={'center'}>
                                     <Button variant='contained' onClick={onSubmit}>
-                                        {buttonText}
+                                        {buttonText === 'Edit' ? 'Edit' : 'Save Edited Changes'}
                                     </Button>
                                 </Grid>
                             </Grid>

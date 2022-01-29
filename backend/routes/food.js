@@ -14,9 +14,9 @@ Router.get("/", function(req, res) {
         foodItem.find(function(err, users) {
             if (err) {
                 console.log(err);
-                res.status(500).json({errMsg: err.message});
+                res.status(500).json(err);
             } else {
-                console.log(users);
+                // console.log(users);
                 res.status(200).json(users);
             }
         });
@@ -24,9 +24,9 @@ Router.get("/", function(req, res) {
         foodItem.find({VendorID: req.query.vendorid}, function(err, users) {
             if (err) {
                 console.log(err);
-                res.status(500).json({errMsg: err.message});
+                res.status(500).json(err);
             } else {
-                console.log(users);
+                // console.log(users);
                 res.status(200).json(users);
             }
         });
@@ -45,7 +45,7 @@ Router.post("/insert-item", async (req, res) => {
         newFoodItem
             .save()
             .then(foodItem => res.status(200).json(foodItem))
-            .catch(err => res.status(500).json({errMsg: err.message}));
+            .catch(err => res.status(500).json(err));
     }
 });
 
@@ -53,22 +53,65 @@ Router.post("/insert-item", async (req, res) => {
 Router.post('/edit-item', async (req, res) => {
     console.log(req.body);
     const FoodItem = req.body;
-    foodItem.findOneAndUpdate({ Name: FoodItem.Name, VendorID: FoodItem.VendorID },
-        {
-            Price: FoodItem.Price,
-            Veg: FoodItem.Veg
-        }, 
-        {new: true},
-        (err, doc) => {
-            if (err) {
-                console.log(err);
-                res.status(500).json({errMsg: err.message});
-            } else {
-                console.log("FOOD ITEM: ", doc.Name); 
-                res.status(200).send(`OK, edited ${doc.Name}`);
-            }
+    if (FoodItem.vendorEdited) {
+        foodItem.updateMany({VendorID: FoodItem.VendorID}, {
+            CanteenOpeningTime: FoodItem.COT,  
+            CanteenClosingTime: FoodItem.CCT, 
+            VendorName: FoodItem.VendorName,
+            ShopName: FoodItem.ShopName
+        }, (err) => console.log(err));
+    } else {
+        if (FoodItem.rate) {
+            foodItem.findOneAndUpdate({ Name: FoodItem.Name, VendorID: FoodItem.VendorID },
+                {
+                    $inc: { BuyersRated: 1 }
+                }, 
+                {new: true},
+                (err, doc) => {
+                    if (err) {
+                        console.log(err);
+                        res.status(500).json(err);
+                    } else {
+                        console.log("Incremented no of buyers who rated ", doc.Name,": ", doc.BuyersRated); 
+                        const newRating = (doc.Rating * (doc.BuyersRated - 1) + FoodItem.Rating) / (doc.BuyersRated); 
+                        foodItem.findOneAndUpdate({ _id: doc._id },
+                            {
+                                Rating: newRating
+                            }, 
+                            {new: true},
+                            (err, doc) => {
+                                if (err) {
+                                    console.log(err);
+                                    res.status(500).json(err);
+                                } else {
+                                    console.log(`New rating of ${doc.Name}: `, doc.Rating); 
+                                    res.status(200).send(`OK, edited ${doc.Name}`);
+                                }
+                            }
+                        );
+                        res.status(200).json({BuyersRated: doc.BuyersRated, oldRating: doc.Rating});
+                    }
+                }
+            );
+        } else {
+            foodItem.findOneAndUpdate({ Name: FoodItem.Name, VendorID: FoodItem.VendorID },
+                {
+                    Price: FoodItem.Price,
+                    Veg: FoodItem.Veg
+                }, 
+                {new: true},
+                (err, doc) => {
+                    if (err) {
+                        console.log(err);
+                        res.status(500).json(err);
+                    } else {
+                        console.log("FOOD ITEM: ", doc.Name); 
+                        res.status(200).send(`OK, edited ${doc.Name}`);
+                    }
+                }
+            );
         }
-    );
+    }
 });
 
 // Delete

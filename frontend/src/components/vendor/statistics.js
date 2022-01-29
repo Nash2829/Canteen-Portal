@@ -9,6 +9,7 @@ import TableRow from "@mui/material/TableRow";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import Typography from '@mui/material/Typography';
+  
 
 const Statistics = (props) => {
     const user = JSON.parse(localStorage.getItem('user'))
@@ -18,14 +19,36 @@ const Statistics = (props) => {
 
     useEffect(() => {
         console.log(userID);
-        const post = {VendorID: userID};
+        
         axios
             .get(`http://localhost:4000/order?vendorid=${userID}`)
             .then((response) => {
                 setOrders(response.data);
+                const id_orders = Array.from(orders.reduce((prev, order) => {
+                    if (order.Status === 'COMPLETED') console.log(order);
+                    prev.set(order.BuyerID, (prev.get(order.BuyerID) || 0) + (order.Status === 'COMPLETED'));
+                    return prev;
+                }, new Map()));
+                const age = new Map(); const batch = new Map();
+                for (let i = 0; i < orders.length; i++) {
+                    axios.get(`http://localhost:4000/user?id=${id_orders[i][0]}`)
+                        .then((response) => {
+                            age.set(response.data.Age, (age.get(response.data.Age) || 0) + id_orders[i][1]);
+                        })
+                }
+                Promise.all(age);
+                for (let i = 0; i < orders.length; i++) {
+                    axios.get(`http://localhost:4000/user?id=${id_orders[i][0]}`)
+                        .then((response) => {
+                            batch.set(response.data.BatchName, (batch.get(response.data.BatchName) || 0) + id_orders[i][1]);
+                        })
+                }
+                Promise.all(batch);
+        console.log(age);
+
             })
             .catch(err => {
-                console.log('Err.Message: ', err.errMsg)
+                console.log('Err.Message: ', err)
             });
     }, []);
     return (
@@ -63,12 +86,12 @@ const Statistics = (props) => {
                     <TableHead>
                         <TableRow>
                             <TableCell> Food item </TableCell>
-                            <TableCell> Orders completed </TableCell>
+                            <TableCell> Orders </TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {
-                        (Array.from(orders.reduce((prev, order) => prev.set(order.foodItem, (prev.get(order.foodItem) || 0) + 1), new Map())))
+                        (Array.from(orders.reduce((prev, order) => prev.set(order.foodItem, (prev.get(order.foodItem) || 0) + (order.Status !== 'REJECTED')), new Map())))
                             .sort((x, y) => (y[1] - x[1]))
                             .slice(0, 5)
                             .map((x) => (
