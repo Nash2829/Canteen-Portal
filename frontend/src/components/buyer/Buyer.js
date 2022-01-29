@@ -51,11 +51,14 @@ const VendorProfile = (props) => {
             swal({text: 'Please enter a valid amount to add money', icon: 'warning'})
             .then((resp) => {if (resp) {setAddMoney(0); return;}});
         }
-        e.preventDefault();
+        // e.preventDefault();
         if (addMoney === 0) {return;}
         axios
-            .post('https://localhost:4000/user/edit', {updateWallet: true, _id: curr._id, increment: addMoney})
-            .then((resp) => {
+            .post('http://localhost:4000/user/edit', {
+                updateWallet: true, 
+                _id: curr._id, 
+                increment: Number(addMoney)
+            }).then((resp) => {
                 console.log(resp);
                 let tmp = curr; tmp.Wallet = Number(tmp.Wallet) + Number(addMoney);
                 localStorage.setItem('user', JSON.stringify(tmp));
@@ -149,7 +152,7 @@ const VendorProfile = (props) => {
                         p: 2,
                         display: 'flex',
                         flexDirection: 'column',
-                        height: 500,
+                        height: 460,
                     }}
                 >
                     <Grid container align={'center'}>

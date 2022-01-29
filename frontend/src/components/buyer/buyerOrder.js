@@ -9,13 +9,7 @@ import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import Divider from "@mui/material/Divider";
-import Autocomplete from "@mui/material/Autocomplete";
-import IconButton from "@mui/material/IconButton";
 import Chip from '@mui/material/Chip';
-import InputAdornment from "@mui/material/InputAdornment";
 import swal from 'sweetalert';
 import SearchIcon from "@mui/icons-material/Search";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
@@ -36,6 +30,11 @@ import DialogTitle from '@mui/material/DialogTitle';
 import MuiInput from '@mui/material/Input';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import IconButton from "@mui/material/IconButton";
+import InputAdornment from "@mui/material/InputAdornment";
+import Fuse from 'fuse.js'
 
 const TAGS = ["Beverage", "Hot", "Cold", "Meal", "Snacks", "Spicy", "Very spicy", "Sweet", "Dessert", "Vegan"]
 const ADD_ONS = ["Cheese", "Butter", "Ketchup", "Schezwan", "Mayonnaise", "Mustard", "Peri peri", "Chocolate", "Milkmaid", "Garlic dip"]
@@ -73,6 +72,7 @@ const BuyerFoodMenu = (props) => {
     const ShopName = user.ShopName;
 
     const [foodMenu, setFoodMenu] = useState([]);
+    const [filteredMenu, setFilteredMenu] = useState([]);
     const [sortedMenu, setSortedMenu] = useState([]);
     const [sortByPrice, setSortByPrice] = useState(true);
     const [searchText, setSearchText] = useState('');
@@ -210,7 +210,7 @@ const BuyerFoodMenu = (props) => {
                             text: `Your order of ₹${Totall} has been placed. Please wait till the chef prepares it.`, 
                             icon: `success`}).then(() => {
                                 setOpen(false);
-                                navigate('/buyer/orders');
+                                window.location='/buyer/orders';
                             });
                     })
                     .catch((error) => console.log(error));
@@ -227,11 +227,12 @@ const BuyerFoodMenu = (props) => {
     };
 
     useEffect(() => {
-        console.log(userID);
+        // console.log(userID);
         axios
             .get('http://localhost:4000/food')
             .then((response) => {
                 setFoodMenu(response.data);
+                setFilteredMenu(response.data);
                 setSortedMenu(response.data);
                 setSearchText('');
             })
@@ -240,15 +241,36 @@ const BuyerFoodMenu = (props) => {
             })
     }, []);
 
+    const searchBar = (event) => {
+        setSearchText(event.target.value);
+        console.log("Text: ", searchText, "    filtered: ", filteredMenu, "  food: ",  foodMenu);
+    }
+
+    useEffect(() => {
+        const [intermediate, setIntermediate] = useState(filteredMenu);
+        if (searchText !== null && !(searchText === '')) {
+            const fuse = new Fuse(foodMenu, {
+                keys: ['Name']
+            });
+            const results = fuse.search(searchText);
+            if (results.length) {
+                setIntermediate(results.map(result => result.item));
+            } else {
+                setIntermediate([]);
+            }
+        }
+        
+        if (sortByPrice) {
+            let tempFoodMenu = intermediate;
+            const flag = sortByPrice;
+            tempFoodMenu.sort((a, b) => {
+                return (1 - 2 * flag) * ( a.Price - b.Price);
+            });
+            setIntermediate(tempFoodMenu);
+        }
+    });
+
     const sortChange = () => {
-        let tempFoodMenu = foodMenu;
-        const flag = sortByPrice;
-        console.log(flag);
-        tempFoodMenu.sort((a, b) => {
-            return (1 - 2 * flag) * ( a.Price - b.Price);
-        });
-        console.log(tempFoodMenu);
-        setFoodMenu(tempFoodMenu);
         setSortByPrice(!flag);
     };
 
@@ -261,7 +283,35 @@ const BuyerFoodMenu = (props) => {
   return (
     <div align={'center'} >
 
-        <Grid item xs={12} md={9} lg={9}>
+            <Grid item xs={12} md={9} lg={9}>
+            <Grid container>
+            <Grid item xs={12} md={3} lg={3}>
+            <List component="nav" aria-label="mailbox folders">
+                <ListItem text>
+                <h1>Filters</h1>
+                </ListItem>
+            </List>
+            </Grid>
+            <Grid item xs={12} md={9} lg={9}>
+            <List component="nav" aria-label="mailbox folders">
+                <TextField
+                id="standard-basic"
+                label="Search"
+                fullWidth={true}
+                InputProps={{
+                    endAdornment: (
+                    <InputAdornment>
+                        <IconButton>
+                        <SearchIcon />
+                        </IconButton>
+                    </InputAdornment>
+                    ),
+                }}
+                onChange={searchBar}
+                />
+            </List>
+            </Grid>
+        </Grid>
             <Paper>
                 <Table size="small">
                     <TableHead>
@@ -285,7 +335,7 @@ const BuyerFoodMenu = (props) => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {foodMenu.map((user, ind) => (
+                        {(filteredMenu).map((user, ind) => (
                         <TableRow key={ind}>
                             <TableCell>{ind + 1}</TableCell>
                             <TableCell>{user.Name}</TableCell>

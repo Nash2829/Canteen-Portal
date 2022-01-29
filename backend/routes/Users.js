@@ -6,8 +6,6 @@ const bcrypt = require("bcrypt");
 // GET request 
 // Getting all the users
 Router.get("/", async function(req, res) {
-    console.log(req.query.id);
-    console.log(req.query.vendorid);
     if (req.query.vendorid === null || req.query.vendorid === undefined) {
         if (req.query.id === null || req.query.id === undefined) {
             await User.find(function(err, users) {

@@ -9,7 +9,18 @@ import TableRow from "@mui/material/TableRow";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import Typography from '@mui/material/Typography';
+import PieChart, {
+    Series,
+    Label,
+    Margin,
+    Export,
+    Legend,
+    Animation,
+  } from 'devextreme-react/pie-chart';
   
+  function formatText(arg) {
+    return `${arg.argumentText} (${arg.percentText})`;
+  }
 
 const Statistics = (props) => {
     const user = JSON.parse(localStorage.getItem('user'))
@@ -91,7 +102,7 @@ const Statistics = (props) => {
                     </TableHead>
                     <TableBody>
                         {
-                        (Array.from(orders.reduce((prev, order) => prev.set(order.foodItem, (prev.get(order.foodItem) || 0) + (order.Status !== 'REJECTED')), new Map())))
+                        (Array.from(orders.reduce((prev, order) => prev.set(order.foodItem, (prev.get(order.foodItem) || 0) + 1), new Map())))
                             .sort((x, y) => (y[1] - x[1]))
                             .slice(0, 5)
                             .map((x) => (
@@ -104,6 +115,56 @@ const Statistics = (props) => {
                     </TableBody>
                 </Table>
           </Paper>
+        </Grid>
+        <Grid container align={'center'}>
+            <Grid item xs={6}>
+                <PieChart
+                    id="pie"
+                    dataSource={Array.from(orders.reduce((prev, order) => prev.set(order.buyerBatch, (prev.get(order.buyerBatch) || 0)
+                                + 1), new Map())).map((x) => ({
+                                    Batch: x[0],
+                                    Orders: x[1] 
+                                }))}
+                    palette="Bright"
+                    title="Orders from batches"
+                    resolveLabelOverlapping={'shift'}
+                    >
+                    <Series
+                        argumentField="Batch"
+                        valueField="Orders"
+                    >
+                        <Label visible={true} customizeText={formatText} />
+                    </Series>
+                    <Margin bottom={20} />
+                    <Export enabled={true} />
+                    <Legend visible={false} />
+                    <Animation enabled={false} />
+                </PieChart>
+            </Grid>
+            <Grid item xs={6}>
+                <PieChart
+                    id="pie"
+                    dataSource={Array.from(orders.reduce((prev, order) => prev.set(order.buyerAge, (prev.get(order.buyerAge) || 0)
+                        + (order.Status !== 'REJECTED')), new Map())).map((x) => ({
+                            Age: x[0],
+                            Orders: x[1] 
+                        }))}
+                    palette="Bright"
+                    title="Orders from different age groups"
+                    resolveLabelOverlapping={'shift'}
+                    >
+                    <Series
+                        argumentField="Age"
+                        valueField="Orders"
+                    >
+                        <Label visible={true} customizeText={formatText} />
+                    </Series>
+                    <Margin bottom={20} />
+                    <Export enabled={true} />
+                    <Legend visible={false} />
+                    <Animation enabled={false} />
+                </PieChart>
+            </Grid>
         </Grid>
     </div>
   );

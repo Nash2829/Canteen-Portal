@@ -18,15 +18,15 @@ const Navbar = () => {
     useEffect(() => {
         if (curr !== undefined && curr !== null) {
         setCurr(JSON.parse(localStorage.getItem('user')));
-        // axios
-        //     .get(`http://localhost:4000/user?id=${curr._id}`)
-        //     .then((response) => {
-        //         setCurr(response.data);
-        //         localStorage.setItem('user', JSON.stringify(curr));
-        //     })
-        //     .catch(err => {
-        //         console.log('Err.Message: ', err)
-        //     });
+        axios
+            .get(`http://localhost:4000/user?id=${curr._id}`)
+            .then((response) => {
+                setCurr(response.data);
+                localStorage.setItem('user', JSON.stringify(curr));
+            })
+            .catch(err => {
+                console.log('Err.Message: ', err)
+            });
         }
     }, []);
 

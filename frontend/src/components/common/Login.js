@@ -71,10 +71,10 @@ const Login = (props) => {
                     resetInputs();
                     if (res.type === 'Vendor') {
                         localStorage.setItem('page', '/vendor');
-                        navigate('/vendor');
+                        window.location='/vendor';
                     } else {
                         localStorage.setItem('page', '/buyer');
-                        navigate('/buyer')
+                        window.location='/buyer';
                     }
                 }
             })
