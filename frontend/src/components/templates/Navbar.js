@@ -78,7 +78,7 @@ const Navbar = () => {
                             </Button>
                             <Button variant='contained' 
                                 color="error" startIcon={<LogoutIcon />} 
-                                onClick={() => {localStorage.clear(); navigate('/');}} >
+                                onClick={() => {localStorage.clear(); window.location='/';}} >
                                 Logout
                             </Button> 
                         </ButtonGroup>

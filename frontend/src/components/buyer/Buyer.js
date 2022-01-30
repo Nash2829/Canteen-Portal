@@ -6,6 +6,7 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import swal from 'sweetalert';
 import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
 import Toolbar from '@mui/material/Toolbar';
 import Container from '@mui/material/Container';
 import MenuItem from '@mui/material/MenuItem';
@@ -160,21 +161,17 @@ const VendorProfile = (props) => {
                             <Grid container align={'center'} spacing={2}>
 
                                 <Grid item xs={12}>
+                                    <Typography gutterbottom>
+                                        Email: {thisUser.Email}    
+                                    </Typography>
+                                </Grid>
+                                <Grid item xs={12}>
                                     <TextField
                                         label='Name'
                                         variant='outlined'
                                         value={thisUser.Name}
                                         InputProps={{readOnly: true}}
                                         onChange={handleChange('Name')}
-                                    />
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <TextField
-                                        label='Email'
-                                        variant='outlined'
-                                        value={thisUser.Email}
-                                        InputProps={{readOnly: true}}
-                                        onChange={handleChange('Email')}
                                     />
                                 </Grid>
                                 <Grid item xs={12}>

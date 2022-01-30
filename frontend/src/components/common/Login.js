@@ -44,6 +44,10 @@ const Login = (props) => {
 
     const onSubmit = (event) => {
         event.preventDefault();
+        if (Email === '' || Password === '') {
+            swal('Error', 'Please fill all the fields', 'error');
+            resetInputs(); return;
+        }
         const thisUser = {
             Email: Email,
             Password: Password

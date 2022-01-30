@@ -97,7 +97,9 @@ Router.post('/edit-item', async (req, res) => {
             foodItem.findOneAndUpdate({ Name: FoodItem.Name, VendorID: FoodItem.VendorID },
                 {
                     Price: FoodItem.Price,
-                    Veg: FoodItem.Veg
+                    Veg: FoodItem.Veg,
+                    AddOns: FoodItem.AddOns, 
+                    Tags: FoodItem.Tags,
                 }, 
                 {new: true},
                 (err, doc) => {

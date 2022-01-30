@@ -31,12 +31,12 @@ import FormGroup from '@mui/material/FormGroup';
 import FormHelperText from '@mui/material/FormHelperText';
 import Checkbox from '@mui/material/Checkbox';
 
+const TAGS = ["Beverage", "Hot", "Cold", "Meal", "Snacks", "Spicy", "Very spicy", "Sweet", "Dessert", "Vegan"]
+const ADD_ONS = ["Cheese", "Butter", "Ketchup", "Schezwan", "Mayonnaise", "Mustard", "Peri peri", "Chocolate", "Milkmaid", "Garlic dip"]
+
+const indices = new Array(10).fill().map((_, idx) => idx);
 
 const AddFoodItem = (props) => {
-    const TAGS = ["Beverage", "Hot", "Cold", "Meal", "Snacks", "Spicy", "Very spicy", "Sweet", "Dessert", "Vegan"]
-    const ADD_ONS = ["Cheese", "Butter", "Ketchup", "Schezwan", "Mayonnaise", "Mustard", "Peri peri", "Chocolate", "Milkmaid", "Garlic dip"]
-
-    const indices = new Array(10).fill().map((_, idx) => idx);
 
     const user = JSON.parse(localStorage.getItem('user'))
     const userID = user._id;
@@ -76,9 +76,6 @@ const AddFoodItem = (props) => {
     }
     const onChangePrice = (e) => {
         setPrice(e.target.value);
-    }
-    const onChangeRating = (e) => {
-        setRating(e.target.value);
     }
 
     const onAddFoodItem = (event) => {

@@ -28,7 +28,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import MuiInput from '@mui/material/Input';
-import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
@@ -36,8 +35,8 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 import FormGroup from '@mui/material/FormGroup';
-
-
+import Checkbox from '@mui/material/Checkbox';
+import Box from '@mui/material/Box';
 
 const TAGS = ["Beverage", "Hot", "Cold", "Meal", "Snacks", "Spicy", "Very spicy", "Sweet", "Dessert", "Vegan"]
 const ADD_ONS = ["Cheese", "Butter", "Ketchup", "Schezwan", "Mayonnaise", "Mustard", "Peri peri", "Chocolate", "Milkmaid", "Garlic dip"]
@@ -55,19 +54,42 @@ const FoodMenu = (props) => {
     const user = JSON.parse(localStorage.getItem('user'))
     const userID = user._id;
 
+    const [addOnBool, setAddOnBool] = useState(new Array(10).fill(false));
+    const [addOnPrice, setAddOnPrice] = useState(new Array(10).fill(0));
+
+    const [tagBool, setTagBool] = useState(new Array(10).fill(false));
+
     const [foodMenu, setFoodMenu] = useState([]);
     const [sortByPrice, setSortByPrice] = useState(true);
+    const [sortByRating, setSortByRating] = useState(true);
 
     const [editItem, setEditItem] = useState({
         _id: 0, Name: '', Tags: 0, AddOns: [], Price: 0, Veg: true
     });
 
+    const handleChangeTagBool = (idx) => event => {
+        const tmp = [...tagBool]; tmp[idx] = event.target.checked;
+        setTagBool(tmp);
+    }
+
+    const handleChangeBool = (idx) => event => {
+        const tmp = [...addOnBool]; tmp[idx] = event.target.checked; 
+        setAddOnBool(tmp);
+    }
+
     const handleChangeEdit = (prop) => (event) => {
         setEditItem({...editItem, [prop]: event.target.value});
     }
 
+    const handleChangePrice = (idx) => event => {
+        if (event.target.value >= 0) {
+            const tmp = [...addOnPrice]; tmp[idx] = event.target.value;
+            setAddOnPrice(tmp);
+        }        
+    }
+
     useEffect(() => {
-        console.log(userID);
+        // console.log(userID);
         axios
             .get(`http://localhost:4000/food?vendorid=${userID}`)
             .then((response) => {
@@ -86,13 +108,21 @@ const FoodMenu = (props) => {
     const sortChange = () => {
         let tempFoodMenu = foodMenu;
         const flag = sortByPrice;
-        console.log(flag);
         tempFoodMenu.sort((a, b) => {
             return (1 - 2 * flag) * ( a.Price - b.Price);
         });
-        console.log(tempFoodMenu);
         setFoodMenu(tempFoodMenu);
         setSortByPrice(!flag);
+    };
+
+    const sortRating = () => {
+        let tempFoodMenu = foodMenu;
+        const flag = sortByRating;
+        tempFoodMenu.sort((a, b) => {
+            return (1 - 2 * flag) * ( a.Rating - b.Rating);
+        });
+        setFoodMenu(tempFoodMenu);
+        setSortByRating(!flag);
     };
 
     const addFoodItem = (event) => {
@@ -100,29 +130,36 @@ const FoodMenu = (props) => {
         navigate('/vendor/add-item')
     }
 
+    const handleClose = () => {
+        setOpen(false);
+        setEditItem({
+            _id: 0, Name: '', Tags: 0, AddOns: [], Price: 0, Veg: true
+        }); 
+        setAddOnBool(new Array(10).fill(false));
+        setAddOnPrice(new Array(10).fill(0));
+    };
+
     const getTags = (tagSet) => {
         let tagList = [];
         TAGS.forEach((tag, idx) => {if ((tagSet >> idx) & 1) tagList.push(tag);})
         return tagList;
     }
 
-    const handleClose = () => {
-        setEditItem({
-            _id: 0, Name: '', Tags: 0, AddOns: [], Price: 0, Veg: true
-        }); 
-        setOpen(false);
-    };
-
     const onEditItem = () => {
+        const addOnlist = [];
+        addOnBool.forEach((b, idx) => { if (b) addOnlist.push({Name: idx, Price: Number(addOnPrice[idx])}) });
         axios
             .post('http://localhost:4000/food/edit-item', {
                 Name: editItem.Name, 
                 VendorID: userID, 
                 Price: editItem.Price, 
-                Veg: editItem.Veg
+                Veg: editItem.Veg,
+                AddOns: addOnlist, 
+                Tags: tagBool.reduce((prev, b, i) => prev | ((1 << i) * b), 0),
             }).then((response) => {
-                console.log(response.data);
-                swal('Edited successfully', `${editItem.Name} has been edited successfully.` ,'success');
+                // console.log(response.data);
+                swal('Edited successfully', `${editItem.Name} has been edited successfully.` ,'success')
+                .then((resp) => {if (resp) window.location='/vendor/shop-menu';});
             }).catch((err) => console.log(err));
         setEditItem({
             _id: 0, Name: '', Tags: 0, AddOns: [], Price: 0, Veg: true
@@ -158,8 +195,8 @@ const FoodMenu = (props) => {
                             <TableCell>Tags</TableCell>
                             <TableCell>
                                 {" "}
-                                <Button >
-                                {sortByPrice ? <ArrowDownwardIcon /> : <ArrowUpwardIcon />}
+                                <Button onClick={sortRating}>
+                                {sortByRating ? <ArrowDownwardIcon /> : <ArrowUpwardIcon />}
                                 </Button>
                                 Rating
                             </TableCell>
@@ -190,7 +227,7 @@ const FoodMenu = (props) => {
                                         if (willDelete) {
                                             axios.post('http://localhost:4000/food/delete', {_id: user._id})
                                             .then((resp) => {
-                                                console.log(resp);
+                                                // console.log(resp);
                                                 swal({
                                                     title: `Deleted ${itemName}`,
                                                     text: "Poof! Your food item has been deleted!", 
@@ -218,6 +255,12 @@ const FoodMenu = (props) => {
                                         Tags: user.Tags,
                                         AddOns: user.AddOns
                                     });
+                                    user.AddOns.forEach((addOn) => {
+                                        addOnPrice[addOn.Name] = addOn.Price;
+                                        addOnBool[addOn.Name] = true;
+                                    });
+                                    // console.log(getTags(user.Tags));
+                                    indices.forEach((idx) =>   tagBool[idx] = Boolean((user.Tags >> idx) & 1) );
                                     setOpen(true);
                                 }}>
                                     Edit Item
@@ -272,6 +315,58 @@ const FoodMenu = (props) => {
                                     <FormControlLabel value={false} control={<Radio />} label="Non-veg" />
                                 </RadioGroup>
                             </FormControl>
+                        </Grid>
+                        <Grid item xs={12} >
+                        <FormControl sx={{ m: 3 }} component="fieldset" variant="standard">
+                            <FormLabel component="legend" align={'center'}>Add ons: </FormLabel>
+                            <FormGroup>
+                            <Grid container spacing={1}>
+                            {indices.map((i) => (
+                            <Grid item xs={12}>
+                                <Grid item xs={10} >
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox checked={addOnBool[i]} onChange={handleChangeBool(i)} />
+                                        }
+                                        label={ADD_ONS[i]}
+                                    />
+                                </Grid>
+                                <Grid item  xs={2}  >
+                                    <TextField
+                                        size='small'
+                                        label={ADD_ONS[i] + ' price'}
+                                        variant='outlined'
+                                        value={addOnPrice[i]}
+                                        onChange={handleChangePrice(i)}
+                                    />
+                                </Grid>
+                            </Grid>
+                            ))}
+                            </Grid>
+                            </FormGroup>
+                        </FormControl>
+                        </Grid>
+
+                        <Grid item xs={12} >
+                        <Box sx={{ display: 'flex' }}>
+                        <FormControl sx={{ m: 3 }} component="fieldset" variant="standard">
+                            <FormLabel component="legend" align={'center'}>Tags: </FormLabel>
+                            <FormGroup>
+                            <Grid container spacing={1} >
+                            {indices.map((i) => (
+                            <Grid item xs={12}>
+                                <FormControlLabel align={'center'}
+                                    control={
+                                        <Checkbox checked={tagBool[i]} onChange={handleChangeTagBool(i)} />
+                                    }
+                                    label={TAGS[i]}
+                                />
+                            </Grid>
+                            ))}
+                            </Grid>
+                            </FormGroup>
+                        </FormControl>
+                        </Box>
                         </Grid>
                     </Grid>
                     </DialogContent>
