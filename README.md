@@ -1,4 +1,4 @@
-# MERN Stack Boilerplate
+# Canteen Portal
 
 ## Installations
 
@@ -17,33 +17,9 @@ brew install node
 
 ### MongoDB
 
-Install the community edition [here](https://docs.mongodb.com/manual/installation/#mongodb-community-edition-installation-tutorials).
+This makes use of MongoDB Atlas.
 
-
-### React
-
-```
-npm install -g create-react-app
-```
-
-* To create a new React app:
-```
-create-react-app name_of_app
-```
-
-* To run the app, cd into the directory and do:
-```
-npm start
-```
-
-## Running the boilerplate
-
-* Run Mongo daemon:
-```
-sudo mongod
-```
-Mongo will be running on port 27017.
-
+## Running
 
 * Run Express Backend:
 ```
