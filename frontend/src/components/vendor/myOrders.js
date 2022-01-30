@@ -46,7 +46,9 @@ const VendorOrders = (props) => {
 
 
     const changeStatus = (orderId, status, refund, vendorName) => {
-        if (orders.reduce((prev, order) => prev + ((order.Status === 'ACCEPTED' || order.Status === 'COOKING') ? 1 : 0)) >= 10 && 
+        const sum = orders.reduce((prev, order) => prev + (order.Status === 'ACCEPTED' || order.Status === 'COOKING'), 0) ;
+        // console.log(sum); return;
+        if (sum >= 10 && 
             status === 'ACCEPTED') {
             swal('Order overload', 'Please tend to the pending orders first. You can come to this order later.', 'warning');
             return;

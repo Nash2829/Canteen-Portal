@@ -121,7 +121,7 @@ const Statistics = (props) => {
                 <PieChart
                     id="pie"
                     dataSource={Array.from(orders.reduce((prev, order) => prev.set(order.buyerBatch, (prev.get(order.buyerBatch) || 0)
-                                + 1), new Map())).map((x) => ({
+                                + (order.Status === 'COMPLETED')), new Map())).map((x) => ({
                                     Batch: x[0],
                                     Orders: x[1] 
                                 }))}
@@ -145,7 +145,7 @@ const Statistics = (props) => {
                 <PieChart
                     id="pie"
                     dataSource={Array.from(orders.reduce((prev, order) => prev.set(order.buyerAge, (prev.get(order.buyerAge) || 0)
-                        + (order.Status !== 'REJECTED')), new Map())).map((x) => ({
+                        + (order.Status === 'COMPLETED')), new Map())).map((x) => ({
                             Age: x[0],
                             Orders: x[1] 
                         }))}
